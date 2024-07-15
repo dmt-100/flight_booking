@@ -19,8 +19,10 @@ public class Airport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
     @Column(name = "airport_code", length = 3)
-    String code;
+    String airportCode;
 
     @Column(name = "airport_name", nullable = false, columnDefinition = "jsonb")
     @NonNull

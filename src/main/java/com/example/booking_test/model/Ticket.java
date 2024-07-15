@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Entity
@@ -15,21 +16,29 @@ import java.util.List;
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @NonNull
-    private String TicketNumber;
+    @Column(name = "ticket_no", nullable = false)
+    Long ticketNumber;
 
     @NonNull
-    private String passengerName;
+    @Column(name = "book_ref", nullable = false, length = 6)
+    @OneToOne
+    Booking bookRef;
 
     @NonNull
-    private String passengerDocument;
+    @Column(name = "passenger_id", nullable = false, length = 20)
+    String passengerId;
 
-    @ManyToOne
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
+    @NonNull
+    @Column(name = "passenger_name", nullable = false, length = 100)
+    String passengerName;
 
-    @OneToMany(mappedBy = "tickets", cascade = CascadeType.ALL)
-    private List<TicketFlight> ticketFlights;
+    @Column(name = "contact_data", columnDefinition = "jsonb")
+    String contactData;
+
+//    @OneToMany(mappedBy = "tickets", cascade = CascadeType.ALL)
+//    List<TicketFlight> ticketFlights;
+
 }

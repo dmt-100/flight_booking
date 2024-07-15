@@ -19,12 +19,14 @@ import java.time.ZonedDateTime;
 public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "flight_id")
     Long id;
+
+    @Column(name = "flight_id")
+    Long flightId;
 
     @Column(name = "flight_no", nullable = false)
     @NonNull
-    String flightNo;
+    String flightNumber;
 
     @Column(name = "scheduled_departure", nullable = false)
     @NonNull
@@ -34,15 +36,14 @@ public class Flight {
     @NonNull
     ZonedDateTime scheduledArrival;
 
-    @Column(name = "departure_airport", nullable = false, length = 3)
     @NonNull
     @OneToOne
-//    @JoinColumn(name="flights")
+    @Column(name = "departure_airport", nullable = false, length = 3)
     Airport departureAirport;
 
-    @Column(name = "arrival_airport", nullable = false, length = 3)
     @NonNull
     @OneToOne
+    @Column(name = "arrival_airport", nullable = false, length = 3)
     Airport arrivalAirport;
 
     @Column(name = "status", nullable = false)
@@ -51,6 +52,7 @@ public class Flight {
 
     @Column(name = "aircraft_code", nullable = false, length = 3)
     @NonNull
+    @OneToOne
     Aircraft aircraftCode;
 
     @Column(name = "actual_departure")
