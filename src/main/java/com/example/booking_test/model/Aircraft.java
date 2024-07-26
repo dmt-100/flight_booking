@@ -4,21 +4,26 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import javax.validation.constraints.Positive;
+import java.util.List;
 import java.util.Set;
 
-@Data
 @Entity
+@Table(name = "aircrafts_data")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "aircrafts_data")
+@ToString
 public class Aircraft {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     String id;
 
-    @Column(name = "aircraft_code", length = 3)
+    @NonNull
+    @Column(name = "aircraft_code", nullable = false, length = 3)
     String aircraftCode;
 
     @NonNull
@@ -28,6 +33,9 @@ public class Aircraft {
     @NonNull
     @Column(name = "range", nullable = false)
     @Positive
-    int range;
+    Integer  range;
+
+    @OneToMany(mappedBy = "aircraft", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Seat> seats;
 
 }

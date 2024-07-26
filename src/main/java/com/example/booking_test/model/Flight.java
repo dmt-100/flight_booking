@@ -5,9 +5,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 
-@Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +16,7 @@ import java.time.ZonedDateTime;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "flights")
+@ToString
 public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +27,7 @@ public class Flight {
 
     @Column(name = "flight_no", nullable = false)
     @NonNull
-    String flightNumber;
+    String flightNo;
 
     @Column(name = "scheduled_departure", nullable = false)
     @NonNull
@@ -37,12 +38,12 @@ public class Flight {
     ZonedDateTime scheduledArrival;
 
     @NonNull
-    @OneToOne
+    @ManyToOne
     @Column(name = "departure_airport", nullable = false, length = 3)
     Airport departureAirport;
 
     @NonNull
-    @OneToOne
+    @ManyToOne
     @Column(name = "arrival_airport", nullable = false, length = 3)
     Airport arrivalAirport;
 
@@ -50,9 +51,9 @@ public class Flight {
     @NonNull
     String status;
 
-    @Column(name = "aircraft_code", nullable = false, length = 3)
+    @JoinColumn(name = "aircraft_code", nullable = false)
     @NonNull
-    @OneToOne
+    @ManyToOne
     Aircraft aircraftCode;
 
     @Column(name = "actual_departure")
@@ -60,4 +61,11 @@ public class Flight {
 
     @Column(name = "actual_arrival")
     ZonedDateTime actualArrival;
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<TicketFlight> ticketFlights;
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<BoardingPass> boardingPasses;
+
 }

@@ -9,24 +9,27 @@ import org.hibernate.type.YesNoConverter;
 import java.awt.*;
 import java.util.Collection;
 
-@Data
 @Entity
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 @Table(name = "airports_data")
+@ToString
 public class Airport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "airport_code", length = 3)
+    @Column(name = "airport_code", nullable = false, length = 3)
     String airportCode;
 
     @Column(name = "airport_name", nullable = false, columnDefinition = "jsonb")
     @NonNull
-    String name;
+    String airportName;
 
     @Column(name = "city", nullable = false)
     @NonNull

@@ -5,12 +5,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
 @Entity
+@Table(name = "boarding_passes")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "boarding_passes")
+@ToString
 public class BoardingPass {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,19 +21,19 @@ public class BoardingPass {
 
     @ManyToOne
     @JoinColumn(name = "ticket_no", insertable = false, updatable = false)
-    TicketFlight ticketNumber;
+    TicketFlight ticketNo;
 
-    @Nonnull
-    @Column(name = "flight_id", nullable = false)
-    Long flightId;
+    @ManyToOne
+    @JoinColumn(name = "flight_id", referencedColumnName = "flight_id", insertable = false, updatable = false)
+    Flight  flight;
 
     @Nonnull
     @Column(name = "boarding_no", nullable = false)
-    int boardingNumber;
+    Integer boardingNo;
 
     @Nonnull
     @Column(name = "seat_no", nullable = false, length = 4)
-    String seatNumber;
+    String seatNo;
 
 
 

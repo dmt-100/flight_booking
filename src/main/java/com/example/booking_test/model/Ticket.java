@@ -20,7 +20,7 @@ public class Ticket {
 
     @NonNull
     @Column(name = "ticket_no", nullable = false)
-    Long ticketNumber;
+    String ticketNumber;
 
     @NonNull
     @Column(name = "book_ref", nullable = false, length = 6)

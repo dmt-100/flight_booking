@@ -33,6 +33,9 @@ public class Booking {
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Ticket> tickets;
+
 //    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Ticket> tickets;
 }

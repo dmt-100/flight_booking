@@ -2,38 +2,41 @@ package com.example.booking_test.model;
 
 import com.example.booking_test.model.enums.FareConditions;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 
-@Data
-@NoArgsConstructor
 @Entity
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "ticket_flights")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString
 public class TicketFlight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "ticket_no", insertable = false, updatable = false)
-    Ticket ticketNumber;
-
-    @ManyToOne
-    @JoinColumn(name = "flight_no", insertable = false, updatable = false)
-    Flight flightId;
-
     @NonNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "fare_conditions")
+    @Column(name = "fare_conditions", nullable = false)
     FareConditions fareConditions;
 
     @NonNull
     @Column(name = "amount", nullable = false)
-    BigDecimal amount;
+    Double amount;
+
+    @ManyToOne
+    @JoinColumn(name = "ticket_no", referencedColumnName = "ticket_no", insertable = false, updatable = false)
+    Ticket ticket;
+
+    @ManyToOne
+    @JoinColumn(name = "flight_id", referencedColumnName = "flight_id", insertable = false, updatable = false)
+    Flight flight;
+
+
 }
