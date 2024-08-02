@@ -36,7 +36,4 @@ public class Booking {
             orphanRemoval = true)
     private Set<Ticket> tickets;
 
-    public Booking(String bRef, ZonedDateTime dateTIme, BigDecimal totalAmount) {
-    }
-
 }

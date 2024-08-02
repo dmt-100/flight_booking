@@ -3,13 +3,10 @@ package ru.dmt100.flight_booking.ticketFlight.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.dmt100.flight_booking.boardingPass.model.BoardingPass;
 import ru.dmt100.flight_booking.enums.FareConditions;
 import ru.dmt100.flight_booking.flight.model.Flight;
-import ru.dmt100.flight_booking.ticket.model.Ticket;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Entity
 @Table(name = "ticket_flights")
@@ -23,12 +20,10 @@ import java.util.Set;
 public class TicketFlight {
 
     @Id
-    @ManyToOne
     @JoinColumn(name = "ticket_no",
-            referencedColumnName = "ticket_no",
             insertable = false,
             updatable = false)
-    Ticket ticket;
+    String ticketNo;
 
     @ManyToOne
     @JoinColumn(name = "flight_id",
@@ -43,13 +38,5 @@ public class TicketFlight {
 
     @Column(name = "amount", nullable = false)
     BigDecimal amount;
-
-    @ManyToOne
-    @JoinColumn(name = "ticket_no", insertable = false, updatable = false)
-    private BoardingPass boardingPass;
-
-    @OneToMany(mappedBy = "ticketFlight", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    Set<Ticket> tickets;
-
 
 }

@@ -13,9 +13,9 @@ public class ConnectionManager {
 
     public Connection open() {
         try {
-            String PASSWORD_KEY = "spring.datasource.password";
-            String USERNAME_KEY = "spring.datasource.username";
             String URL_KEY = "spring.datasource.url";
+            String USERNAME_KEY = "spring.datasource.username";
+            String PASSWORD_KEY = "spring.datasource.password";
 
             connection = DriverManager.getConnection(
                     PropertyUtil.getKey(URL_KEY),

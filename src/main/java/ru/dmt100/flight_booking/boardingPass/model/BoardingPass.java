@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.flight.model.Flight;
-import ru.dmt100.flight_booking.ticketFlight.model.TicketFlight;
-
-import java.util.Set;
 
 @Entity
 @Table(name = "boarding_passes")
@@ -20,9 +17,8 @@ import java.util.Set;
 public class BoardingPass {
 
     @Id
-    @ManyToOne
     @JoinColumn(name = "ticket_no", insertable = false, updatable = false)
-    TicketFlight ticketNo;
+    String ticketNo;
 
     @ManyToOne
     @JoinColumn(name = "flight_id", referencedColumnName = "flight_id", insertable = false, updatable = false)
@@ -33,11 +29,5 @@ public class BoardingPass {
 
     @Column(name = "seat_no", nullable = false, length = 4)
     String seatNo;
-
-    @OneToMany(mappedBy = "boardingPass",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            orphanRemoval = true)
-    Set<TicketFlight> ticketFlights;
 
 }

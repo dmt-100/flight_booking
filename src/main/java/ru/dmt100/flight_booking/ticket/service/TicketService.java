@@ -1,12 +1,16 @@
 package ru.dmt100.flight_booking.ticket.service;
 
-import org.springframework.http.ResponseEntity;
-import ru.dmt100.flight_booking.ticket.model.Ticket;
 import ru.dmt100.flight_booking.ticket.dto.TicketDtoResponse;
+import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
+import ru.dmt100.flight_booking.ticket.model.Ticket;
 
 public interface TicketService {
 
-    ResponseEntity<?> save(Long userId, Ticket ticket);
+    TicketLiteDtoResponse save(Long userId, Ticket ticket);
+
+    TicketLiteDtoResponse getTicketLiteDtoResponse(Long userId, String ticketNo);
+
+    TicketDtoResponse getTicketDtoResponse(Long userId, Long ticketNo);
 
     TicketDtoResponse findTicketById(Long userId, Long ticketNo);
 

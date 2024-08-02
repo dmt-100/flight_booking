@@ -11,13 +11,13 @@ public interface BookingService {
 
     BookingDtoResponse save(Long userId, Booking booking);
 
-    BookingDtoResponse findBookingById(Long userId, String bookRef);
+    BookingDtoResponse getBooking(Long userId, boolean withTickets, String bookRef);
 
     List<PassengerInfo> findPassengersInfoByBookingId(Long userId, String bookRef);
 
     List<BookingDtoResponse> findBookingsByFlightId(Long userId, Long flightId, boolean isTickets);
 
-    List<BookingDtoResponse> findAll(Long userId, Integer limit);
+    List<BookingDtoResponse> findAll(Long userId, Integer limit, boolean isTickets);
 
     BookingDtoResponse update(Long userId, String bookRef, Booking booking);
 

@@ -2,7 +2,8 @@ package ru.dmt100.flight_booking.ticket.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import ru.dmt100.flight_booking.ticket.model.Ticket;
+
+import java.util.Map;
 
 @Builder
 @AllArgsConstructor
@@ -13,7 +14,7 @@ import ru.dmt100.flight_booking.ticket.model.Ticket;
 public class TicketLiteDtoResponse {
 
     @JsonProperty("ticket_no")
-    Long ticketNo;
+    String ticketNo;
 
     @JsonProperty("book_ref")
     String bookRef;
@@ -25,13 +26,6 @@ public class TicketLiteDtoResponse {
     String passengerName;
 
     @JsonProperty("contact_data")
-    String contactData;
+    Map<String, String> contactData;
 
-    public void getTicketLiteDtoResponseFromTicket(Ticket ticket) {
-        this.ticketNo = ticket.getTicketNo();
-        this.bookRef = ticket.getBookRef();;
-        this.passengerId = ticket.getPassengerId();
-        this.passengerName = ticket.getPassengerName();
-        this.contactData = ticket.getContactData();
-    }
 }

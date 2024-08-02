@@ -1,6 +1,7 @@
 package ru.dmt100.flight_booking.booking;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import ru.dmt100.flight_booking.booking.service.BookingService;
 import java.util.List;
 
 import static ru.dmt100.flight_booking.constant.Constant.USER_ID;
+import static ru.dmt100.flight_booking.constant.Constant.X_PROCESSING_TIME;
 
 @RestController
 @AllArgsConstructor
@@ -21,19 +23,31 @@ public class BookingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<BookingDtoResponse> saveBooking(
+    public ResponseEntity<BookingDtoResponse> createBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Booking booking) {
+        long timeStart = System.currentTimeMillis();
         BookingDtoResponse bookingDtoResponse = bookingService.save(userId, booking);
-        return ResponseEntity.ok(bookingDtoResponse);
+
+        double queryTime = (System.currentTimeMillis() - timeStart) / 1000.0;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, queryTime + " sec.");
+        return ResponseEntity.ok().headers(headers).body(bookingDtoResponse);
     }
 
     @GetMapping("/{bookRef}")
     public ResponseEntity<BookingDtoResponse> getBookingById(
             @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestParam(value = "isTickets") Boolean isTickets,
             @PathVariable String bookRef) {
-        BookingDtoResponse booking = bookingService.findBookingById(userId, bookRef);
-        return ResponseEntity.ok(booking);
+        long timeStart = System.currentTimeMillis();
+        BookingDtoResponse booking = bookingService.getBooking(userId, isTickets, bookRef);
+
+        long timeElapsed = System.currentTimeMillis() - timeStart;
+        double seconds = timeElapsed / 1000.0;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.ok().headers(headers).body(booking);
     }
 
 
@@ -41,8 +55,13 @@ public class BookingController {
     public ResponseEntity<List<PassengerInfo>> findPassengersByBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
+        long timeStart = System.currentTimeMillis();
         List<PassengerInfo> passengerInfos = bookingService.findPassengersInfoByBookingId(userId, bookRef);
-        return ResponseEntity.ok(passengerInfos);
+
+        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.ok().headers(headers).body(passengerInfos);
     }
 
     @GetMapping("/flight/{flightId}")
@@ -50,26 +69,42 @@ public class BookingController {
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable Long flightId,
             @RequestParam(value = "isTickets", required = false) Boolean isTickets) {
+        long timeStart = System.currentTimeMillis();
         List<BookingDtoResponse> bookings = bookingService.findBookingsByFlightId(userId, flightId, isTickets);
-        return ResponseEntity.ok(bookings);
+
+        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.ok().headers(headers).body(bookings);
     }
 
     @GetMapping()
     public ResponseEntity<List<BookingDtoResponse>> getAllBookings(
             @RequestHeader(value = USER_ID, required = false) Long userId,
-            @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
-        List<BookingDtoResponse> bookings = bookingService.findAll(userId, limit);
-        return ResponseEntity.ok(bookings);
+            @RequestParam(value = "limit", required = false, defaultValue = "100") int limit,
+            @RequestParam(value = "isTickets", required = false) Boolean isTickets) {
+        long timeStart = System.currentTimeMillis();
+        List<BookingDtoResponse> bookings = bookingService.findAll(userId, limit, isTickets);
+
+        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.ok().headers(headers).body(bookings);
     }
 
-    @PutMapping("/{bookRef}")
+    @PatchMapping("/{bookRef}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<BookingDtoResponse> updateBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef,
             @RequestBody Booking bookingDtoRequest) {
+        long timeStart = System.currentTimeMillis();
         BookingDtoResponse bookingDtoResponse = bookingService.update(userId, bookRef, bookingDtoRequest);
-        return ResponseEntity.ok(bookingDtoResponse);
+
+        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.ok().headers(headers).body(bookingDtoResponse);
     }
 
     @DeleteMapping("/{bookRef}")
@@ -77,8 +112,13 @@ public class BookingController {
     public ResponseEntity<?> deleteBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
+        long timeStart = System.currentTimeMillis();
         bookingService.delete(userId, bookRef);
-        return ResponseEntity.accepted().build();
+
+        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        return ResponseEntity.noContent().headers(headers).build();
     }
 
 }
