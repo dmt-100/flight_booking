@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.booking.model.Booking;
 import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDtoResponse;
 import ru.dmt100.flight_booking.booking.model.dto.PassengerInfo;
 import ru.dmt100.flight_booking.booking.service.BookingService;
 
@@ -26,12 +27,14 @@ public class BookingController {
     public ResponseEntity<BookingDtoResponse> createBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Booking booking) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         BookingDtoResponse bookingDtoResponse = bookingService.save(userId, booking);
 
-        double queryTime = (System.currentTimeMillis() - timeStart) / 1000.0;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000.0;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, queryTime + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(bookingDtoResponse);
     }
 
@@ -40,13 +43,14 @@ public class BookingController {
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestParam(value = "isTickets") Boolean isTickets,
             @PathVariable String bookRef) {
-        long timeStart = System.currentTimeMillis();
-        BookingDtoResponse booking = bookingService.getBooking(userId, isTickets, bookRef);
+        double timeStart = System.currentTimeMillis();
 
-        long timeElapsed = System.currentTimeMillis() - timeStart;
-        double seconds = timeElapsed / 1000.0;
+        BookingDtoResponse booking = bookingService.get(userId, isTickets, bookRef);
+
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(booking);
     }
 
@@ -55,12 +59,14 @@ public class BookingController {
     public ResponseEntity<List<PassengerInfo>> findPassengersByBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         List<PassengerInfo> passengerInfos = bookingService.findPassengersInfoByBookingId(userId, bookRef);
 
-        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(passengerInfos);
     }
 
@@ -69,26 +75,28 @@ public class BookingController {
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable Long flightId,
             @RequestParam(value = "isTickets", required = false) Boolean isTickets) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         List<BookingDtoResponse> bookings = bookingService.findBookingsByFlightId(userId, flightId, isTickets);
 
-        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(bookings);
     }
 
     @GetMapping()
-    public ResponseEntity<List<BookingDtoResponse>> getAllBookings(
-            @RequestHeader(value = USER_ID, required = false) Long userId,
-            @RequestParam(value = "limit", required = false, defaultValue = "100") int limit,
-            @RequestParam(value = "isTickets", required = false) Boolean isTickets) {
-        long timeStart = System.currentTimeMillis();
-        List<BookingDtoResponse> bookings = bookingService.findAll(userId, limit, isTickets);
+    public ResponseEntity<List<BookingLiteDtoResponse>> getAllBookings(
+            @RequestHeader(value = USER_ID, required = false) Long userId) {
+        double timeStart = System.currentTimeMillis();
 
-        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        List<BookingLiteDtoResponse> bookings = bookingService.findAll(userId);
+
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(bookings);
     }
 
@@ -98,12 +106,14 @@ public class BookingController {
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef,
             @RequestBody Booking bookingDtoRequest) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         BookingDtoResponse bookingDtoResponse = bookingService.update(userId, bookRef, bookingDtoRequest);
 
-        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(bookingDtoResponse);
     }
 
@@ -112,12 +122,13 @@ public class BookingController {
     public ResponseEntity<?> deleteBooking(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
         bookingService.delete(userId, bookRef);
 
-        double seconds = (System.currentTimeMillis() - timeStart) / 1000;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, seconds + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.noContent().headers(headers).build();
     }
 

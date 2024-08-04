@@ -22,18 +22,18 @@ public class Booking {
 
     @Id
     @Column(name = "book_ref", length = 6, nullable = false)
-    private String bookRef;
+    String bookRef;
 
     @Column(name = "book_date", nullable = false)
-    private ZonedDateTime bookDate;
+    ZonedDateTime bookDate;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+    BigDecimal totalAmount;
 
     @OneToMany(mappedBy = "booking",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
             orphanRemoval = true)
-    private Set<Ticket> tickets;
+    Set<Ticket> tickets;
 
 }

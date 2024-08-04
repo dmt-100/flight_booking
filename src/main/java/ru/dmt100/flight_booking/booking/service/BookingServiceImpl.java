@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.dmt100.flight_booking.booking.model.Booking;
 import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDtoResponse;
 import ru.dmt100.flight_booking.booking.model.dto.PassengerInfo;
 import ru.dmt100.flight_booking.exception.AlreadyExistException;
 import ru.dmt100.flight_booking.exception.InsertException;
@@ -71,70 +72,76 @@ public class BookingServiceImpl implements BookingService {
             WHERE book_ref = ?
             """;
 
-    private static final String DELETING_BOOKING = """
-         DELETE FROM boarding_passes
-         WHERE ticket_no IN (
-             SELECT ticket_no
-             FROM tickets
-             WHERE book_ref = ?
-         );
-         
-         DELETE FROM tickets
-         WHERE book_ref = ?;
-         
-         DELETE FROM bookings
-         WHERE book_ref = ?;
+    private static final String DELETE_BOARDING_PASSES = """
+            DELETE FROM boarding_passes
+            WHERE ticket_no IN (
+                SELECT ticket_no
+                FROM tickets
+                WHERE book_ref = ?
+            );
+            """;
+
+    private static final String DELETE_TICKETS = """
+            DELETE FROM tickets
+            WHERE book_ref = ?;
+            """;
+
+    private static final String DELETE_BOOKINGS = """
+            DELETE FROM bookings
+            WHERE book_ref = ?;
             """;
 
     @Override
     public BookingDtoResponse save(Long userId, Booking booking) {
+        BookingDtoResponse bookingDtoResponse;
         var bookRef = booking.getBookRef();
 
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(NEW_BOOKING)) {
+        try (var con = ConnectionManager.get();
+             var stmt = con.prepareStatement(NEW_BOOKING)) {
 
-            if (isBookingPresence(bookRef)) {
+            if (isBookingPresence(con, bookRef)) {
                 throw new AlreadyExistException("Booking " + bookRef + ", already exist");
             }
 
-            statement.setString(1, bookRef);
-            statement.setTimestamp(2, Timestamp.from(booking.getBookDate().toInstant()));
-            statement.setBigDecimal(3, booking.getTotalAmount());
+            stmt.setString(1, bookRef);
+            stmt.setTimestamp(2, Timestamp.from(booking.getBookDate().toInstant()));
+            stmt.setBigDecimal(3, booking.getTotalAmount());
 
-            var row = statement.executeUpdate();
+            var row = stmt.executeUpdate();
             if (row == 0) {
                 throw new InsertException("Failed to insert a booking.");
             }
+            bookingDtoResponse = fetchBooking(con, booking.getBookRef());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return getBooking(userId, true, booking.getBookRef());
+        return bookingDtoResponse;
     }
 
-    @Override
-    public BookingDtoResponse getBooking(Long userId, boolean withTickets, String bookRef) {
-        try (Connection connection = new ConnectionManager().open()) {
+    public BookingDtoResponse get(Long userId, boolean withTickets, String bookRef) {
+        BookingDtoResponse booking;
 
-            BookingDtoResponse booking = fetchBooking(connection, bookRef);
+        try (Connection con = ConnectionManager.get()) {
+            booking = fetchBooking(con, bookRef);
 
             if (withTickets) {
-                booking.setTickets(getTickets(connection, bookRef));
+                booking.setTickets(getTickets(con, bookRef));
             }
-            return booking;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return booking;
     }
 
     @Override
     public List<PassengerInfo> findPassengersInfoByBookingId(Long userId, String bookRef) {
         List<PassengerInfo> passengerInfos = new ArrayList<>();
 
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(PASSENGERS_BY_BOOKING)) {
+        try (var con = ConnectionManager.get();
+             var stmt = con.prepareStatement(PASSENGERS_BY_BOOKING)) {
 
-            statement.setString(1, bookRef);
-            try (var rs = statement.executeQuery()) {
+            stmt.setString(1, bookRef);
+            try (var rs = stmt.executeQuery()) {
 
                 if (!rs.next()) {
                     throw new NotFoundException("Booking " + bookRef + ", does not exist");
@@ -163,20 +170,20 @@ public class BookingServiceImpl implements BookingService {
         List<BookingDtoResponse> bookingDtoResponses = new ArrayList<>();
         BookingDtoResponse bookingDtoResponse;
 
-        try (var connection = new ConnectionManager().open();
-             var checkStatement = connection.prepareStatement(FLIGHT_PRESENCE);
-             var statement = connection.prepareStatement(BOOKINGS_BY_FLIGHT_ID)) {
+        try (var con = ConnectionManager.get();
+             var checkStmt = con.prepareStatement(FLIGHT_PRESENCE);
+             var stmt = con.prepareStatement(BOOKINGS_BY_FLIGHT_ID)) {
 
-            checkStatement.setLong(1, flightId);
-            var checkResultSet = checkStatement.executeQuery();
+            checkStmt.setLong(1, flightId);
+            var checkResultSet = checkStmt.executeQuery();
             if (!checkResultSet.next()) {
                 throw new NotFoundException("Flight " + flightId + ", does not exist");
             } else {
-                statement.setLong(1, flightId);
-                var rs = statement.executeQuery();
+                stmt.setLong(1, flightId);
+                var rs = stmt.executeQuery();
 
                 while (rs.next()) {
-                    bookingDtoResponse = getBooking(userId, isTickets, rs.getString(1));
+                    bookingDtoResponse = get(userId, isTickets, rs.getString(1));
                     bookingDtoResponses.add(bookingDtoResponse);
                 }
             }
@@ -188,59 +195,53 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoResponse> findAll(Long userId, Integer limit, boolean isTickets) {
+    public List<BookingLiteDtoResponse> findAll(Long userId) {
         long timeStart = System.currentTimeMillis();
-        List<BookingDtoResponse> bookingDtoResponses = new ArrayList<>();
-        BookingDtoResponse bookingDtoResponse;
+        List<BookingLiteDtoResponse> bookings = new ArrayList<>();
+        BookingLiteDtoResponse booking;
 
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(ALL_BOOKINGS);
-             var resultSet = statement.executeQuery()) {
+        try (var con = ConnectionManager.get();
+             var stmt = con.prepareStatement(ALL_BOOKINGS);
+             var rs = stmt.executeQuery()) {
 
-            while (resultSet.next()) {
-                bookingDtoResponse = new BookingDtoResponse();
-                String bookRef = resultSet.getString("book_ref");
-                bookingDtoResponse.setBookRef(bookRef);
-                bookingDtoResponse.setBookDate(resultSet.getTimestamp("book_date")
+            while (rs.next()) {
+                booking = new BookingLiteDtoResponse();
+                String bookRef = rs.getString("book_ref");
+                booking.setBookRef(bookRef);
+                booking.setBookDate(rs.getTimestamp("book_date")
                         .toInstant().atZone(ZoneId.systemDefault()));
-                bookingDtoResponse.setTotalAmount(resultSet.getBigDecimal("total_amount"));
+                booking.setTotalAmount(rs.getBigDecimal("total_amount"));
 
-                if (isTickets) {
-                    bookingDtoResponse.setTickets(getTickets(connection, bookRef));
-                }
-                bookingDtoResponses.add(bookingDtoResponse);
-
-                if (bookingDtoResponses.size() >= limit)
-                    break;
+                bookings.add(booking);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         System.out.println(System.currentTimeMillis() - timeStart);
-        return bookingDtoResponses;
+        return bookings;
     }
 
     @Override
     public BookingDtoResponse update(Long userId, String bookRef, Booking booking) {
         BookingDtoResponse bookingDtoResponse;
 
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(UPDATING_BOOKING)) {
+        try (var con = ConnectionManager.get();
+             var stmt = con.prepareStatement(UPDATING_BOOKING)) {
 
-            if (!isBookingPresence(bookRef)) {
+            if (!isBookingPresence(con, bookRef)) {
                 throw new NotFoundException("Booking " + bookRef + ", does not exist");
             } else {
 
                 Timestamp timestamp = Timestamp.from(booking.getBookDate().toInstant());
 
-                statement.setTimestamp(1, timestamp);
-                statement.setBigDecimal(2, booking.getTotalAmount());
-                statement.setString(3, bookRef);
-                int row = statement.executeUpdate();
+                stmt.setTimestamp(1, timestamp);
+                stmt.setBigDecimal(2, booking.getTotalAmount());
+                stmt.setString(3, bookRef);
+                int row = stmt.executeUpdate();
                 if (row == 0) {
                     throw new InsertException("Failed to update a booking.");
                 } else {
-                    bookingDtoResponse = getBooking(userId, true, bookRef);
+                    bookingDtoResponse = get(userId, true, bookRef);
                 }
             }
         } catch (SQLException e) {
@@ -251,19 +252,25 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public ResponseEntity<?> delete(Long userId, String bookRef) {
+        try (var con = ConnectionManager.get();
+             var stmt1 = con.prepareStatement(DELETE_BOARDING_PASSES);
+             var stmt2 = con.prepareStatement(DELETE_TICKETS);
+             var stmt3 = con.prepareStatement(DELETE_BOOKINGS)) {
 
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(DELETING_BOOKING)) {
-
-            if (!isBookingPresence(bookRef)) {
+            if (!isBookingPresence(con, bookRef)) {
                 throw new NotFoundException("Booking " + bookRef + ", does not exist");
             }
 
-            statement.setString(1, bookRef);
-            statement.setString(2, bookRef);
-            statement.setString(3, bookRef);
-            var deletedRowsCount = statement.executeUpdate();
-            if (deletedRowsCount == 0) {
+            stmt1.setString(1, bookRef);
+            int deletedBoardingPasses = stmt1.executeUpdate();
+
+            stmt2.setString(1, bookRef);
+            int deletedTickets = stmt2.executeUpdate();
+
+            stmt3.setString(1, bookRef);
+            int deletedBookings = stmt3.executeUpdate();
+
+            if (deletedBoardingPasses == 0 && deletedTickets == 0 && deletedBookings == 0) {
                 throw new RuntimeException("Failed to delete booking " + bookRef);
             }
         } catch (SQLException e) {
@@ -273,10 +280,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    private BookingDtoResponse fetchBooking(Connection connection, String bookRef) {
-        try (var bookingStatement = connection.prepareStatement(BOOKING_BY_BOOK_REF)) {
-            bookingStatement.setString(1, bookRef);
-            try (var rs = bookingStatement.executeQuery()) {
+    private BookingDtoResponse fetchBooking(Connection con, String bookRef) {
+        try (var stmt = con.prepareStatement(BOOKING_BY_BOOK_REF)) {
+
+            stmt.setString(1, bookRef);
+
+            try (var rs = stmt.executeQuery()) {
 
                 if (!rs.next()) {
                     throw new NotFoundException("Booking " + bookRef + ", does not exist");
@@ -295,14 +304,14 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Set<TicketLiteDtoResponse> getTickets(Connection connection, String bookRef) {
+    private Set<TicketLiteDtoResponse> getTickets(Connection con, String bookRef) {
 
         Set<TicketLiteDtoResponse> tickets = new HashSet<>();
         TicketLiteDtoResponse ticket;
 
-        try (var statement = connection.prepareStatement(TICKETS_BY_BOOKING_ID)) {
-            statement.setString(1, bookRef);
-            var rs = statement.executeQuery();
+        try (var stmt = con.prepareStatement(TICKETS_BY_BOOKING_ID)) {
+            stmt.setString(1, bookRef);
+            var rs = stmt.executeQuery();
             while (rs.next()) {
                 String ticketNo = rs.getString("ticket_no");
                 Long passengerId = Long.valueOf(rs.getString("passenger_id")
@@ -324,12 +333,11 @@ public class BookingServiceImpl implements BookingService {
         return tickets;
     }
 
-    private boolean isBookingPresence(String bookRef) {
-        try (var connection = new ConnectionManager().open();
-             var statement = connection.prepareStatement(BOOKING_PRESENCE)) {
+    private boolean isBookingPresence(Connection con, String bookRef) {
+        try (var stmt = con.prepareStatement(BOOKING_PRESENCE)) {
 
-            statement.setString(1, bookRef);
-            var rs = statement.executeQuery();
+            stmt.setString(1, bookRef);
+            var rs = stmt.executeQuery();
 
             return rs.next();
 

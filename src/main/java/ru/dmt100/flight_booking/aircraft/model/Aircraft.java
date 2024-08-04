@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.seat.model.Seat;
+import ru.dmt100.flight_booking.util.MapConverter;
 
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -23,7 +25,8 @@ public class Aircraft {
     String aircraftCode;
 
     @Column(name = "model", nullable = false, columnDefinition = "jsonb")
-    String model;
+    @Convert(converter = MapConverter.class)
+    Map<String, String> model;
 
     @Column(name = "range", nullable = false)
     Integer  range;

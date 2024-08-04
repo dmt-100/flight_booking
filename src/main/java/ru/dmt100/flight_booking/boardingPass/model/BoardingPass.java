@@ -6,7 +6,10 @@ import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.flight.model.Flight;
 
 @Entity
-@Table(name = "boarding_passes")
+@Table(name = "boarding_passes",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"flight_id", "seat_no"})
+        })
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

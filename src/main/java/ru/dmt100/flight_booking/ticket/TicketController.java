@@ -9,6 +9,8 @@ import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
 import ru.dmt100.flight_booking.ticket.service.TicketService;
 
+import java.util.List;
+
 import static ru.dmt100.flight_booking.constant.Constant.USER_ID;
 import static ru.dmt100.flight_booking.constant.Constant.X_PROCESSING_TIME;
 
@@ -24,12 +26,14 @@ public class TicketController {
     public ResponseEntity<TicketLiteDtoResponse> saveTicket(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Ticket ticket) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         TicketLiteDtoResponse ticketLiteDtoResponse = ticketService.save(userId, ticket);
 
-        double queryTime = (System.currentTimeMillis() - timeStart) / 1000.0;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, queryTime + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(ticketLiteDtoResponse);
     }
 
@@ -37,12 +41,30 @@ public class TicketController {
     public ResponseEntity<TicketLiteDtoResponse> getTicketById(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String ticketNo) {
-        long timeStart = System.currentTimeMillis();
+        double timeStart = System.currentTimeMillis();
+
         TicketLiteDtoResponse ticketDtoResponse = ticketService.getTicketLiteDtoResponse(userId, ticketNo);
 
-        double queryTime = (System.currentTimeMillis() - timeStart) / 1000.0;
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, queryTime + " sec.");
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
         return ResponseEntity.ok().headers(headers).body(ticketDtoResponse);
     }
+
+    @GetMapping("")
+    public ResponseEntity<List <TicketLiteDtoResponse>> getAllTickets(
+            @RequestHeader(value = USER_ID, required = false) Long userId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<TicketLiteDtoResponse> ticketsDtoResponse = ticketService.findAllTicketsLite(userId);
+
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
+        return ResponseEntity.ok().headers(headers).body(ticketsDtoResponse);
+    }
+
+
 }
