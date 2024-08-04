@@ -102,7 +102,7 @@ public class BookingController {
 
     @PatchMapping("/{bookRef}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<BookingDtoResponse> updateBooking(
+    public ResponseEntity<BookingDtoResponse> update(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef,
             @RequestBody Booking bookingDtoRequest) {

@@ -1,6 +1,5 @@
 package ru.dmt100.flight_booking.ticket.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,7 +36,7 @@ public class Ticket {
 
     @Column(name = "contact_data", columnDefinition = "jsonb")
     @Convert(converter = MapConverter.class)
-    @JsonProperty("contact_data")
+//    @JsonProperty("contact_data")
     Map<String, String> contactData;
 
     @ManyToOne

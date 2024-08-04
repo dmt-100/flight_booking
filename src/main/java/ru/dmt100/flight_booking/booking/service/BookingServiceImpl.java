@@ -9,8 +9,9 @@ import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
 import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDtoResponse;
 import ru.dmt100.flight_booking.booking.model.dto.PassengerInfo;
 import ru.dmt100.flight_booking.exception.AlreadyExistException;
-import ru.dmt100.flight_booking.exception.InsertException;
+import ru.dmt100.flight_booking.exception.SaveException;
 import ru.dmt100.flight_booking.exception.NotFoundException;
+import ru.dmt100.flight_booking.exception.UpdateException;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 import ru.dmt100.flight_booking.util.MapConverter;
@@ -109,7 +110,7 @@ public class BookingServiceImpl implements BookingService {
 
             var row = stmt.executeUpdate();
             if (row == 0) {
-                throw new InsertException("Failed to insert a booking.");
+                throw new SaveException("Failed to insert a booking.");
             }
             bookingDtoResponse = fetchBooking(con, booking.getBookRef());
         } catch (SQLException e) {
@@ -239,7 +240,7 @@ public class BookingServiceImpl implements BookingService {
                 stmt.setString(3, bookRef);
                 int row = stmt.executeUpdate();
                 if (row == 0) {
-                    throw new InsertException("Failed to update a booking.");
+                    throw new UpdateException("Failed to update a booking.");
                 } else {
                     bookingDtoResponse = get(userId, true, bookRef);
                 }
@@ -333,7 +334,7 @@ public class BookingServiceImpl implements BookingService {
         return tickets;
     }
 
-    private boolean isBookingPresence(Connection con, String bookRef) {
+    public boolean isBookingPresence(Connection con, String bookRef) {
         try (var stmt = con.prepareStatement(BOOKING_PRESENCE)) {
 
             stmt.setString(1, bookRef);

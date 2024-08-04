@@ -23,7 +23,7 @@ public class TicketController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<TicketLiteDtoResponse> saveTicket(
+    public ResponseEntity<TicketLiteDtoResponse> save(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Ticket ticket) {
         double timeStart = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class TicketController {
     }
 
     @GetMapping("/{ticketNo}")
-    public ResponseEntity<TicketLiteDtoResponse> getTicketById(
+    public ResponseEntity<TicketLiteDtoResponse> get(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String ticketNo) {
         double timeStart = System.currentTimeMillis();
@@ -53,11 +53,26 @@ public class TicketController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List <TicketLiteDtoResponse>> getAllTickets(
+    public ResponseEntity<List<TicketLiteDtoResponse>> getAllTickets(
             @RequestHeader(value = USER_ID, required = false) Long userId) {
         double timeStart = System.currentTimeMillis();
 
         List<TicketLiteDtoResponse> ticketsDtoResponse = ticketService.findAllTicketsLite(userId);
+
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
+        return ResponseEntity.ok().headers(headers).body(ticketsDtoResponse);
+    }
+
+    @PatchMapping("")
+    public ResponseEntity<TicketLiteDtoResponse> update(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestBody Ticket ticket) {
+        double timeStart = System.currentTimeMillis();
+
+        TicketLiteDtoResponse ticketsDtoResponse = ticketService.update(userId, ticket);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
