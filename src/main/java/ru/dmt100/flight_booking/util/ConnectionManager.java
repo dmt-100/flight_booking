@@ -29,7 +29,7 @@ public class ConnectionManager {
         pool = new ArrayBlockingQueue(size);
 
         IntStream.range(0, size).forEach(i -> {
-            var con = open();
+            var con = getConnection();
 
         /* Create a proxy connection that intercepts the close method
         If the close method is called, the connection is added back to the pool
@@ -45,7 +45,7 @@ public class ConnectionManager {
         });
     }
 
-    public static Connection get() {
+    public static Connection open() {
         try {
             return pool.take();
         } catch (InterruptedException e) {
@@ -53,7 +53,7 @@ public class ConnectionManager {
         }
     }
 
-    private static Connection open() {
+    private static Connection getConnection() {
         try {
             return DriverManager.getConnection(
                     PropertyUtil.getKey(URL_KEY),

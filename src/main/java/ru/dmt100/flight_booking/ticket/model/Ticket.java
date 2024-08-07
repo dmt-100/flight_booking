@@ -23,7 +23,7 @@ public class Ticket {
 
     @Id
     @Column(name = "ticket_no", nullable = false)
-    String ticketNo;
+    Long ticketNo;
 
     @Column(name = "book_ref", insertable=false, updatable=false, nullable = false)
     String bookRef;

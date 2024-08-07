@@ -1,11 +1,12 @@
 package ru.dmt100.flight_booking.exception;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
-import org.springframework.http.HttpHeaders;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -24,5 +25,10 @@ public class GlobalExceptionHandler {
         headers.add("Error-Message", ex.getMessage());
 
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DeleteException.class)
+    public ResponseEntity<?> handleDeleteException(DeleteException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
