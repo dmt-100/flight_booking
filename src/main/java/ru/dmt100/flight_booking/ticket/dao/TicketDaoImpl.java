@@ -196,7 +196,7 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
     }
 
     private boolean isTicketPresence(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(sqlQuery.getIS_PRESENT())) {
+        try (var stmt = con.prepareStatement(sqlQuery.getIS_TICKET_PRESENT())) {
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();

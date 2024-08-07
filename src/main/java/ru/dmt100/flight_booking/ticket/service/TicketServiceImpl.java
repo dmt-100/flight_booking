@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.dmt100.flight_booking.booking.service.BookingServiceImpl;
+import ru.dmt100.flight_booking.booking.dao.BookingDaoImpl;
 import ru.dmt100.flight_booking.exception.AlreadyExistException;
-import ru.dmt100.flight_booking.exception.SaveException;
 import ru.dmt100.flight_booking.exception.NotFoundException;
+import ru.dmt100.flight_booking.exception.SaveException;
 import ru.dmt100.flight_booking.exception.UpdateException;
+import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.ticket.dto.TicketDtoResponse;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
@@ -29,52 +30,24 @@ import java.util.stream.IntStream;
 @Transactional(readOnly = true)
 public class TicketServiceImpl implements TicketService {
 
-    BookingServiceImpl bookingService;
+    private final BookingDaoImpl bookingService;
 
-
-    private static final String TICKET_PRESENCE = """
-            SELECT ticket_no FROM tickets WHERE ticket_no = ?
-            """;
-
-    private static final String NEW_TICKET = """
-            INSERT INTO tickets (
-            ticket_no, 
-            book_ref, 
-            passenger_id,
-            passenger_name,
-            contact_data) 
-            VALUES (?, ?, ?, ?, ?) 
-            """;
-
-    private static final String ALL_TICKETS = """
-            SELECT * FROM tickets;
-            """;
-
-    private static final String TICKET_BY_TICKET_NO = """
-            SELECT * FROM tickets
-            WHERE ticket_no = ?
-            """;
-
-    private static final String UPDATING_TICKET = """
-            UPDATE tickets
-            SET book_ref = ?, passenger_id = ?, passenger_name = ?, contact_data  = ?
-            WHERE ticket_no = ?
-            """;
+    private final SqlQuery sqlQuery;
 
     @Override
     public TicketLiteDtoResponse save(Long userId, Ticket ticket) {
-        var ticketNo = ticket.getTicketNo();
+        var ticketNo = String.format("%013d", Long.parseLong(ticket.getTicketNo()));
         var bookRef = ticket.getBookRef();
         var passengerId = formatPassengerId(ticket.getPassengerId().toString());
         var passengerName = ticket.getPassengerName();
         var contactData = new MapConverter().convertToDatabaseColumn(ticket.getContactData());
 
-        try (var con = ConnectionManager.get()) {
+        try (var con = ConnectionManager.open()) {
 
             if (isTicketPresence(con, ticketNo)) {
                 throw new AlreadyExistException("Ticket " + ticketNo + ", already exist");
             }
-            try (var stmt = con.prepareStatement(NEW_TICKET)) {
+            try (var stmt = con.prepareStatement(sqlQuery.getNEW_TICKET())) {
 
                 stmt.setString(1, ticketNo);
                 stmt.setString(2, bookRef);
@@ -95,7 +68,7 @@ public class TicketServiceImpl implements TicketService {
 
     private TicketLiteDtoResponse get(Connection con, String ticketNo) {
         TicketLiteDtoResponse ticketLiteDtoResponse;
-        try (var stmt = con.prepareStatement(TICKET_BY_TICKET_NO)) {
+        try (var stmt = con.prepareStatement(sqlQuery.getTICKET_BY_TICKET_NO())) {
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
@@ -122,7 +95,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketLiteDtoResponse getTicketLiteDtoResponse(Long userId, String ticketNo) {
-        try (var con = ConnectionManager.get()) {
+        try (var con = ConnectionManager.open()) {
 
             if (!isTicketPresence(con, ticketNo)) {
                 throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
@@ -138,8 +111,8 @@ public class TicketServiceImpl implements TicketService {
     public List<TicketLiteDtoResponse> findAllTicketsLite(Long userId) {
         List<TicketLiteDtoResponse> tickets = new ArrayList<>();
         TicketLiteDtoResponse ticket;
-        try (var con = ConnectionManager.get();
-             var stmt = con.prepareStatement(ALL_TICKETS)) {
+        try (var con = ConnectionManager.open();
+             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS())) {
 
             var rs = stmt.executeQuery();
             while (rs.next()) {
@@ -169,7 +142,7 @@ public class TicketServiceImpl implements TicketService {
         String bookRef = ticket.getBookRef();
 
         String ticketNo = ticket.getTicketNo();
-        try (var con = ConnectionManager.get()) {
+        try (var con = ConnectionManager.open()) {
             if (!isTicketPresence(con, ticketNo)) {
                 throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
             }
@@ -177,7 +150,7 @@ public class TicketServiceImpl implements TicketService {
                 throw new NotFoundException("Booking " + bookRef + ", does not exist");
             }
 
-            try (var stmt = con.prepareStatement(UPDATING_TICKET)) {
+            try (var stmt = con.prepareStatement(sqlQuery.getUPDATE_TICKET())) {
                 stmt.setString(1, bookRef);
                 stmt.setString(2, formatPassengerIdToString(ticket.getPassengerId()));
                 stmt.setString(3, ticket.getPassengerName());
@@ -202,7 +175,6 @@ public class TicketServiceImpl implements TicketService {
         return null;
     }
 
-
     @Override
     public TicketDtoResponse getTicketDtoResponse(Long userId, Long ticketNo) {
         return null;
@@ -214,7 +186,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private boolean isTicketPresence(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(TICKET_PRESENCE)) {
+        try (var stmt = con.prepareStatement(sqlQuery.getIS_TICKET_PRESENT())) {
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();

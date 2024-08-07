@@ -149,7 +149,7 @@ public class SqlQuery {
 
 // TICKETS
 
-    private final String IS_PRESENT = """
+    private final String IS_TICKET_PRESENT = """
             SELECT ticket_no FROM tickets WHERE ticket_no = ?
             """;
 
