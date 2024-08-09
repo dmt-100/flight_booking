@@ -3,13 +3,13 @@ package ru.dmt100.flight_booking.flight.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.dmt100.flight_booking.ticketFlight.model.TicketFlight;
 import ru.dmt100.flight_booking.aircraft.model.Aircraft;
 import ru.dmt100.flight_booking.airport.model.Airport;
-import ru.dmt100.flight_booking.boardingPass.model.BoardingPass;
+import ru.dmt100.flight_booking.enums.Status;
+import ru.dmt100.flight_booking.ticketFlight.model.TicketFlight;
 
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -22,14 +22,14 @@ import java.util.List;
 @Table(name = "flights")
 @ToString
 public class Flight {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "flight_id_seq")
+    @SequenceGenerator(name = "flight_id_seq", sequenceName = "flight_id_seq", allocationSize = 1)
     @Column(name = "flight_id")
     Long flightId;
 
-    @Column(name = "flight_no", nullable = false)
+    @Column(name = "flight_no", length = 6, nullable = false)
     String flightNo;
 
     @Column(name = "scheduled_departure", nullable = false)
@@ -46,8 +46,8 @@ public class Flight {
     @JoinColumn(name = "arrival_airport", nullable = false)
     Airport arrivalAirport;
 
-    @Column(name = "status", nullable = false)
-    String status;
+    @Column(name = "status", length = 20, nullable = false)
+    Status status;
 
     @ManyToOne
     @JoinColumn(name = "aircraft_code", nullable = false)
@@ -59,10 +59,10 @@ public class Flight {
     @Column(name = "actual_arrival")
     ZonedDateTime actualArrival;
 
-    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<TicketFlight> ticketFlights;
-
-    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<BoardingPass> boardingPasses;
+    @OneToMany(mappedBy = "flight",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
+    Set<TicketFlight> ticketFlights;
 
 }
