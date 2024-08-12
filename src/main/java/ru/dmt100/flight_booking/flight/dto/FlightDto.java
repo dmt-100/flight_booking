@@ -2,7 +2,7 @@ package ru.dmt100.flight_booking.flight.dto;
 
 import java.time.ZonedDateTime;
 
-public record FlightDtoResponse(
+public record FlightDto(
         Long flightId,
         String flightNo,
         ZonedDateTime scheduledDeparture,

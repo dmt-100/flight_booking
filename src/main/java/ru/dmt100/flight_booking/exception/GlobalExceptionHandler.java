@@ -11,7 +11,7 @@ import org.springframework.web.context.request.WebRequest;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<Object> handleAlreadyExistException(AlreadyExistException ex) {
+    public ResponseEntity<?> handleAlreadyExistException(AlreadyExistException ex) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Error-Message", ex.getMessage());
 
@@ -20,12 +20,13 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Object> handleAlreadyExistException(NotFoundException ex) {
+    public ResponseEntity<?> handleNotFoundException(NotFoundException ex) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Error-Message", ex.getMessage());
 
-        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.NOT_FOUND);
     }
+
 
     @ExceptionHandler(DeleteException.class)
     public ResponseEntity<?> handleDeleteException(DeleteException ex, WebRequest request) {

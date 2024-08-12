@@ -23,7 +23,7 @@ public class Ticket {
 
     @Id
     @Column(name = "ticket_no", nullable = false)
-    String ticketNo;
+    Long ticketNo;
 
     @Column(name = "book_ref", insertable=false, updatable=false, nullable = false)
     String bookRef;
@@ -36,11 +36,10 @@ public class Ticket {
 
     @Column(name = "contact_data", columnDefinition = "jsonb")
     @Convert(converter = MapConverter.class)
-//    @JsonProperty("contact_data")
     Map<String, String> contactData;
 
     @ManyToOne
-    @JoinColumn(name = "book_ref", nullable = false)
+    @JoinColumn(name = "book_ref")
     @OnDelete(action = OnDeleteAction.CASCADE)
     Booking booking;
 

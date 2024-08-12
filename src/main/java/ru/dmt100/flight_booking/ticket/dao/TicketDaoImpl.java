@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.dmt100.flight_booking.booking.dao.BookingDaoImpl;
 import ru.dmt100.flight_booking.dao.Dao;
 import ru.dmt100.flight_booking.exception.*;
+import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 import ru.dmt100.flight_booking.util.MapConverter;
-import ru.dmt100.flight_booking.sql.SqlQuery;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,8 +25,6 @@ import java.util.stream.IntStream;
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoResponse> {
-    BookingDaoImpl bookingService;
-
     SqlQuery sqlQuery;
 
     @Override
@@ -40,7 +37,7 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
 
         try (var con = ConnectionManager.open()) {
 
-            if (isTicketPresence(con, ticketNo)) {
+            if (isTicketExist(con, ticketNo)) {
                 throw new AlreadyExistException("Ticket " + ticketNo + ", already exist");
             }
             try (var stmt = con.prepareStatement(sqlQuery.getNEW_TICKET())) {
@@ -62,40 +59,34 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
         return find(userId, ticketNo);
     }
 
+
     public Optional<TicketLiteDtoResponse> find(Long userId, String ticketNo) {
+        Optional<TicketLiteDtoResponse> ticketLiteDtoResponse;
         try (var con = ConnectionManager.open()) {
 
-            if (!isTicketPresence(con, ticketNo)) {
+            if (!isTicketExist(con, ticketNo)) {
                 throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
             }
-            return get(con, ticketNo);
-
+            ticketLiteDtoResponse = fetch(con, ticketNo);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return ticketLiteDtoResponse;
     }
 
-    public List<TicketLiteDtoResponse> findAll(Long userId) {
-        List<TicketLiteDtoResponse> tickets = new ArrayList<>();
-        TicketLiteDtoResponse ticket;
+    public List<Optional<TicketLiteDtoResponse>> findAll(Long userId) {
+        List<Optional<TicketLiteDtoResponse>> tickets = new ArrayList<>();
+
         try (var con = ConnectionManager.open();
              var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS())) {
 
             var rs = stmt.executeQuery();
             while (rs.next()) {
                 String ticketNo = rs.getString("ticket_no");
-                String bookRef = rs.getString("book_ref");
-                Long passengerId = Long.valueOf(rs.getString("passenger_id")
-                        .replace(" ", ""));
-                String passengerName = rs.getString("passenger_name");
-                String contactDataString = rs.getString("contact_data");
-                Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataString);
-                ticket = new TicketLiteDtoResponse(
-                        ticketNo,
-                        bookRef,
-                        passengerId,
-                        passengerName,
-                        contactData);
+
+                Optional<TicketLiteDtoResponse> ticket;
+
+                ticket = fetch(con, ticketNo);
                 tickets.add(ticket);
             }
         } catch (SQLException e) {
@@ -106,15 +97,14 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
 
     @Override
     public Optional<TicketLiteDtoResponse> update(Long userId, Ticket ticket) {
+        Long ticketNo = ticket.getTicketNo();
         String bookRef = ticket.getBookRef();
 
-        String ticketNo = String.format("%013d", ticket.getTicketNo());
+        String ticketNoAsString = String.format("%013d", ticket.getTicketNo());
+
         try (var con = ConnectionManager.open()) {
-            if (!isTicketPresence(con, ticketNo)) {
+            if (!isTicketExist(con, ticketNoAsString)) {
                 throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
-            }
-            if (!bookingService.isBookingPresence(con, bookRef)) {
-                throw new NotFoundException("Booking " + bookRef + ", does not exist");
             }
 
             try (var stmt = con.prepareStatement(sqlQuery.getUPDATE_TICKET())) {
@@ -124,13 +114,13 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
 
                 String contactData = new MapConverter().convertToDatabaseColumn(ticket.getContactData());
                 stmt.setObject(4, contactData, java.sql.Types.OTHER);
-                stmt.setString(5, ticketNo);
+                stmt.setString(5, ticketNoAsString);
 
                 var row = stmt.executeUpdate();
                 if (row == 0) {
                     throw new UpdateException("Failed to update the ticket: " + ticketNo);
                 }
-                return get(con, ticketNo);
+                return fetch(con, ticketNoAsString);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -141,8 +131,7 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
     public boolean delete(Long userId, String ticketNo) {
         try (var con = ConnectionManager.open()) {
 
-            if (!isTicketPresence(con, ticketNo)) {
-
+            if (!isTicketExist(con, ticketNo)) {
                 throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
             }
             try (var stmt = con.prepareStatement(sqlQuery.getDELETE_TICKET())) {
@@ -152,11 +141,13 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
                     throw new DeleteException("Failed to delete ticket: " + ticketNo);
                 }
             }
-
+            if (!isTicketExist(con, ticketNo)) {
+                return true;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -167,23 +158,21 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
         return true;
     }
 
-    private Optional<TicketLiteDtoResponse> get(Connection con, String ticketNo) {
-        TicketLiteDtoResponse ticketLiteDtoResponse;
+    public Optional<TicketLiteDtoResponse> fetch(Connection con, String ticketNo) {
+        TicketLiteDtoResponse ticketLiteDtoResponse = new TicketLiteDtoResponse();
 
         try (var stmt = con.prepareStatement(sqlQuery.getTICKET_BY_TICKET_NO())) {
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
-            if (!rs.next()) {
-                throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
-            } else {
+            if (rs.next()) {
                 String bookRef = rs.getString("book_ref");
                 Long passengerId = Long.parseLong(rs.getString("passenger_id")
                         .replaceAll("\\s", ""));
                 String passengerName = rs.getString("passenger_name");
-                String contactDataJson = rs.getString("contact_data");
+                String contactDataJson = rs.getString("contact_data") != null ?
+                        rs.getString("contact_data") : null;
 
-                // Converting JSON string to Map
                 Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataJson);
 
                 ticketLiteDtoResponse = new TicketLiteDtoResponse(
@@ -195,8 +184,8 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
         return Optional.of(ticketLiteDtoResponse);
     }
 
-    private boolean isTicketPresence(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(sqlQuery.getIS_TICKET_PRESENT())) {
+    private boolean isTicketExist(Connection con, String ticketNo) {
+        try (var stmt = con.prepareStatement(sqlQuery.getCHECKING_TICKET_NO())) {
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
@@ -215,7 +204,7 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
         }
     }
 
-    private String formatPassengerIdToString(long number) {
+    public String formatPassengerIdToString(long number) {
         String numStr = String.valueOf(number);
         StringBuilder sb = new StringBuilder();
 

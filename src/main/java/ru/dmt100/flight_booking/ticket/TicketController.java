@@ -1,6 +1,5 @@
 package ru.dmt100.flight_booking.ticket;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -8,8 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.dao.Dao;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
+import ru.dmt100.flight_booking.ticket.dto.record.PassengersInfoByFlightId;
+import ru.dmt100.flight_booking.ticket.dto.record.TicketOnScheduledFlightsByTimeRange;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
+import ru.dmt100.flight_booking.ticket.service.TicketService;
+import ru.dmt100.flight_booking.util.ResponseUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,12 +22,16 @@ import static ru.dmt100.flight_booking.constant.Constant.USER_ID;
 import static ru.dmt100.flight_booking.constant.Constant.X_PROCESSING_TIME;
 
 @RestController
-@AllArgsConstructor
 @RequestMapping("/ticket")
 public class TicketController {
+    private final Dao ticketDao;
+    private final TicketService ticketService;
 
-    @Qualifier("ticketDaoImpl")
-    private final Dao<Long, String, Ticket, TicketLiteDtoResponse> ticketDao;
+    public TicketController(@Qualifier("ticketDaoImpl")Dao ticketDao,
+                            @Qualifier("ticketServiceImpl")TicketService ticketService) {
+        this.ticketDao = ticketDao;
+        this.ticketService = ticketService;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -32,8 +40,7 @@ public class TicketController {
             @RequestBody Ticket ticket) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<TicketLiteDtoResponse> ticketLiteDtoResponse =
-                (Optional<TicketLiteDtoResponse>) ticketDao.save(userId, ticket);
+        Optional<TicketLiteDtoResponse> ticketLiteDtoResponse = ticketDao.save(userId, ticket);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -43,13 +50,12 @@ public class TicketController {
     }
 
     @GetMapping("/{ticketNo}")
-    public ResponseEntity<Optional<TicketLiteDtoResponse>> get(
+    public ResponseEntity<Optional<TicketLiteDtoResponse>> find(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String ticketNo) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<TicketLiteDtoResponse> ticketDtoResponse =
-                (Optional<TicketLiteDtoResponse>) ticketDao.find(userId, ticketNo);
+        Optional<TicketLiteDtoResponse> ticketDtoResponse = ticketDao.find(userId, ticketNo);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -59,17 +65,13 @@ public class TicketController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<TicketLiteDtoResponse>> getAllTickets(
+    public ResponseEntity<?> findAllTickets(
             @RequestHeader(value = USER_ID, required = false) Long userId) {
         double timeStart = System.currentTimeMillis();
 
-        List<TicketLiteDtoResponse> ticketsDtoResponse = ticketDao.findAll(userId);
+        List<TicketLiteDtoResponse> tickets = ticketDao.findAll(userId);
 
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, qTime + " sec.");
-
-        return ResponseEntity.ok().headers(headers).body(ticketsDtoResponse);
+        return ResponseUtil.headersMaker(timeStart, tickets);
     }
 
     @PatchMapping()
@@ -78,8 +80,7 @@ public class TicketController {
             @RequestBody Ticket ticket) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<TicketLiteDtoResponse> ticketsDtoResponse =
-                (Optional<TicketLiteDtoResponse>) ticketDao.update(userId, ticket);
+        Optional<TicketLiteDtoResponse> ticketsDtoResponse = ticketDao.update(userId, ticket);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -103,20 +104,58 @@ public class TicketController {
         return ResponseEntity.ok().headers(headers).body("Is ticket deleted: " + isTicketDeleted);
     }
 
+
     @DeleteMapping("/tickets-delete")
     public ResponseEntity<?> deleteListOfTickets(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Map<String, List<String>> ticketDeleteRequest) {
         double timeStart = System.currentTimeMillis();
 
-        boolean areTicketDeleted = ticketDao.deleteList(userId, ticketDeleteRequest.get("ticketNos"));
+        boolean areTicketsDeleted = ticketDao.deleteList(userId, ticketDeleteRequest.get("ticketNos"));
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
         headers.add(X_PROCESSING_TIME, qTime + " sec.");
 
-        return ResponseEntity.ok().headers(headers).body("Are ticket deleted: " + areTicketDeleted);
+        return ResponseEntity.ok().headers(headers).body("Are tickets deleted: " + areTicketsDeleted);
 
     }
 
+    @GetMapping("/passengerInfo")
+    public ResponseEntity<?> getPassengerInfoByListOfTicketNos(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestBody Map<String, List<String>> passengerTicketNo) {
+        double timeStart = System.currentTimeMillis();
+
+        List<Optional<TicketLiteDtoResponse>> passengerInfos =
+                ticketService.findPassengersInfoByListOfTicketNos(userId,
+                        passengerTicketNo.get("passengerTicketNo"));
+
+        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+    }
+
+    @GetMapping("/passengerInfo/{flightId}")
+    public ResponseEntity<?> getPassengerInfoByFlight(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @PathVariable Long flightId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<PassengersInfoByFlightId> passengerInfos =
+                ticketService.findPassengersInfoByFlightId(userId, flightId);
+
+        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+    }
+
+    @GetMapping("/countTickets")
+    public ResponseEntity<?> getCountTicketsOnScheduledFlightsByTimeRange(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate) {
+        double timeStart = System.currentTimeMillis();
+
+        List<TicketOnScheduledFlightsByTimeRange> passengerInfos =
+                ticketService.getCountTicketsOnScheduledFlightsByTimeRange(userId, startDate, endDate);
+
+        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+    }
 }

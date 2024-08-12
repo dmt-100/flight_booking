@@ -26,10 +26,7 @@ public class TicketFlight {
     String ticketNo;
 
     @ManyToOne
-    @JoinColumn(name = "flight_id",
-            referencedColumnName = "flight_id",
-            insertable = false,
-            updatable = false)
+    @JoinColumn(name = "flight_id", nullable = false)
     Flight flight;
 
     @Enumerated(EnumType.STRING)

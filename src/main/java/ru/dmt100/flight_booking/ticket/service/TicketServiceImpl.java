@@ -2,217 +2,112 @@ package ru.dmt100.flight_booking.ticket.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.dmt100.flight_booking.booking.dao.BookingDaoImpl;
-import ru.dmt100.flight_booking.exception.AlreadyExistException;
+import ru.dmt100.flight_booking.enums.Status;
 import ru.dmt100.flight_booking.exception.NotFoundException;
-import ru.dmt100.flight_booking.exception.SaveException;
-import ru.dmt100.flight_booking.exception.UpdateException;
 import ru.dmt100.flight_booking.sql.SqlQuery;
-import ru.dmt100.flight_booking.ticket.dto.TicketDtoResponse;
+import ru.dmt100.flight_booking.ticket.dao.TicketDaoImpl;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
-import ru.dmt100.flight_booking.ticket.model.Ticket;
+import ru.dmt100.flight_booking.ticket.dto.record.PassengersInfoByFlightId;
+import ru.dmt100.flight_booking.ticket.dto.record.TicketOnScheduledFlightsByTimeRange;
 import ru.dmt100.flight_booking.util.ConnectionManager;
-import ru.dmt100.flight_booking.util.MapConverter;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.Optional;
 
 @Slf4j
-@Service
+@Service("ticketServiceImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class TicketServiceImpl implements TicketService {
-
-    private final BookingDaoImpl bookingService;
-
+    private final TicketDaoImpl ticketDao;
     private final SqlQuery sqlQuery;
 
     @Override
-    public TicketLiteDtoResponse save(Long userId, Ticket ticket) {
-        var ticketNo = String.format("%013d", Long.parseLong(ticket.getTicketNo()));
-        var bookRef = ticket.getBookRef();
-        var passengerId = formatPassengerId(ticket.getPassengerId().toString());
-        var passengerName = ticket.getPassengerName();
-        var contactData = new MapConverter().convertToDatabaseColumn(ticket.getContactData());
-
+    public List<Optional<TicketLiteDtoResponse>> findPassengersInfoByListOfTicketNos(
+            Long userId, List<String> passengersTicketNos) {
+        List<Optional<TicketLiteDtoResponse>> passList = new ArrayList<>();
+        Optional<TicketLiteDtoResponse> pass;
         try (var con = ConnectionManager.open()) {
 
-            if (isTicketPresence(con, ticketNo)) {
-                throw new AlreadyExistException("Ticket " + ticketNo + ", already exist");
-            }
-            try (var stmt = con.prepareStatement(sqlQuery.getNEW_TICKET())) {
+            for (String ticketNo : passengersTicketNos) {
+                pass = ticketDao.fetch(con, ticketNo);
+                assert false;
+                passList.add(pass);
 
-                stmt.setString(1, ticketNo);
-                stmt.setString(2, bookRef);
-                stmt.setString(3, passengerId);
-                stmt.setString(4, passengerName);
-                stmt.setObject(5, contactData, java.sql.Types.OTHER);
-
-                var row = stmt.executeUpdate();
-                if (row == 0) {
-                    throw new SaveException("Failed to save a ticket.");
-                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return getTicketLiteDtoResponse(userId, ticketNo);
-    }
-
-    private TicketLiteDtoResponse get(Connection con, String ticketNo) {
-        TicketLiteDtoResponse ticketLiteDtoResponse;
-        try (var stmt = con.prepareStatement(sqlQuery.getTICKET_BY_TICKET_NO())) {
-
-            stmt.setString(1, ticketNo);
-            var rs = stmt.executeQuery();
-            if (!rs.next()) {
-                throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
-            } else {
-                String bookRef = rs.getString("book_ref");
-                Long passengerId = Long.parseLong(rs.getString("passenger_id")
-                        .replaceAll("\\s", ""));
-                String passengerName = rs.getString("passenger_name");
-                String contactDataJson = rs.getString("contact_data");
-
-                // Converting JSON string to Map
-                Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataJson);
-
-                ticketLiteDtoResponse = new TicketLiteDtoResponse(
-                        ticketNo, bookRef, passengerId, passengerName, contactData);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return ticketLiteDtoResponse;
+        return passList;
     }
 
     @Override
-    public TicketLiteDtoResponse getTicketLiteDtoResponse(Long userId, String ticketNo) {
-        try (var con = ConnectionManager.open()) {
+    public List<PassengersInfoByFlightId> findPassengersInfoByFlightId(Long userId, Long flightId) {
+        List<PassengersInfoByFlightId> passengerInfos = new ArrayList<>();
 
-            if (!isTicketPresence(con, ticketNo)) {
-                throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
-            }
-            return get(con, ticketNo);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public List<TicketLiteDtoResponse> findAllTicketsLite(Long userId) {
-        List<TicketLiteDtoResponse> tickets = new ArrayList<>();
-        TicketLiteDtoResponse ticket;
         try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS())) {
+             var stmt = con.prepareStatement(sqlQuery.getPASSENGERS_INFO_BY_FLIGHT_ID())) {
 
-            var rs = stmt.executeQuery();
-            while (rs.next()) {
-                String ticketNo = rs.getString("ticket_no");
-                String bookRef = rs.getString("book_ref");
-                Long passengerId = Long.valueOf(rs.getString("passenger_id")
-                        .replace(" ", ""));
-                String passengerName = rs.getString("passenger_name");
-                String contactDataString = rs.getString("contact_data");
-                Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataString);
-                ticket = new TicketLiteDtoResponse(
-                        ticketNo,
-                        bookRef,
-                        passengerId,
-                        passengerName,
-                        contactData);
-                tickets.add(ticket);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return tickets;
-    }
+            stmt.setLong(1, flightId);
 
-    @Override
-    public TicketLiteDtoResponse update(Long userId, Ticket ticket) {
-        String bookRef = ticket.getBookRef();
-
-        String ticketNo = ticket.getTicketNo();
-        try (var con = ConnectionManager.open()) {
-            if (!isTicketPresence(con, ticketNo)) {
-                throw new NotFoundException("Ticket " + ticketNo + ", does not exist");
-            }
-            if (!bookingService.isBookingPresence(con, bookRef)) {
-                throw new NotFoundException("Booking " + bookRef + ", does not exist");
-            }
-
-            try (var stmt = con.prepareStatement(sqlQuery.getUPDATE_TICKET())) {
-                stmt.setString(1, bookRef);
-                stmt.setString(2, formatPassengerIdToString(ticket.getPassengerId()));
-                stmt.setString(3, ticket.getPassengerName());
-
-                String contactData = new MapConverter().convertToDatabaseColumn(ticket.getContactData());
-                stmt.setObject(4, contactData, java.sql.Types.OTHER);
-                stmt.setString(5, ticketNo);
-
-                var row = stmt.executeUpdate();
-                if (row == 0) {
-                    throw new UpdateException("Failed to update the ticket.");
+            try (var rs = stmt.executeQuery()) {
+                if (!rs.next()) {
+                    throw new NotFoundException("Flight " + flightId + ", does not exist");
                 }
-                return get(con, ticketNo);
+                while (rs.next()) {
+                    Long ticketNo = rs.getLong("ticket_no");
+                    String bookRef = rs.getString("book_ref");
+                    Long passengerId = Long.valueOf(rs.getString("passenger_id").replace(" ", ""));
+                    String passengerName = rs.getString("passenger_name");
+                    String contactData = rs.getString("contact_data");
+
+                    PassengersInfoByFlightId info = new PassengersInfoByFlightId(
+                             ticketNo, bookRef, passengerId, passengerName, contactData);
+
+                    passengerInfos.add(info);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return passengerInfos;
     }
 
     @Override
-    public ResponseEntity<?> delete(Long userId, String bookRef) {
-        return null;
-    }
+    public List<TicketOnScheduledFlightsByTimeRange> getCountTicketsOnScheduledFlightsByTimeRange(
+            Long userId, LocalDateTime start, LocalDateTime end) {
+        List<TicketOnScheduledFlightsByTimeRange> stats = new ArrayList<>();
+        try(var con = ConnectionManager.open();
+        var stmt = con.prepareStatement(
+                sqlQuery.getCOUNT_TICKETS_ON_SCHEDULED_FLIGHTS_BY_TIME_RANGE())) {
 
-    @Override
-    public TicketDtoResponse getTicketDtoResponse(Long userId, Long ticketNo) {
-        return null;
-    }
+            stmt.setTimestamp(1, Timestamp.valueOf(start));
+            stmt.setTimestamp(2, Timestamp.valueOf(end));
 
-    @Override
-    public TicketDtoResponse getTicketById(Long userId, Long ticketNo) {
-        return new TicketDtoResponse();
-    }
-
-    private boolean isTicketPresence(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(sqlQuery.getIS_TICKET_PRESENT())) {
-
-            stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
-            return rs.next();
+            while(rs.next()) {
+                String flightNo = rs.getString("flight_No");
+                LocalDateTime sDeparture = rs.getTimestamp("scheduled_departure").toLocalDateTime();
+                LocalDateTime sArrival = rs.getTimestamp("scheduled_arrival").toLocalDateTime();
+                Status status = Status.fromDbValue(rs.getString("status"));
+                Integer ticketCount = rs.getInt("ticket_count");
 
+                var ticketOnScheduled = new TicketOnScheduledFlightsByTimeRange(
+                        flightNo, sDeparture, sArrival, status, ticketCount
+                );
+                stats.add(ticketOnScheduled);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return stats;
     }
 
-    private String formatPassengerId(String passengerNo) {
-        if (passengerNo.length() > 4) {
-            return passengerNo.substring(0, 4) + " " + passengerNo.substring(4);
-        } else {
-            return passengerNo;
-        }
-    }
 
-    private String formatPassengerIdToString(long number) {
-        String numStr = String.valueOf(number);
-        StringBuilder sb = new StringBuilder();
-
-        IntStream.range(0, numStr.length())
-                .mapToObj(i -> i == 3 ? numStr.charAt(i) + " " : String.valueOf(numStr.charAt(i)))
-                .forEach(sb::append);
-
-        return sb.toString();
-    }
 }

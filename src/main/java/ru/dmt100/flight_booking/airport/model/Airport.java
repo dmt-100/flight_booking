@@ -3,6 +3,7 @@ package ru.dmt100.flight_booking.airport.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.dmt100.flight_booking.enums.AirportCode;
 import ru.dmt100.flight_booking.flight.model.Flight;
 
 import java.awt.*;
@@ -21,7 +22,7 @@ public class Airport {
 
     @Id
     @Column(name = "airport_code", length = 3, nullable = false)
-    String airportCode;
+    AirportCode airportCode;
 
     @Column(name = "airport_name", columnDefinition = "jsonb", nullable = false)
     String airportName;
@@ -39,11 +40,11 @@ public class Airport {
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
             orphanRemoval = true)
-    Set<Flight> departingFlights;
+    Set<Flight> departingFlightDtoRespons;
 
     @OneToMany(mappedBy = "arrivalAirport",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
             orphanRemoval = true)
-    Set<Flight> arrivingFlights;
+    Set<Flight> arrivingFlightDtoRespons;
 }

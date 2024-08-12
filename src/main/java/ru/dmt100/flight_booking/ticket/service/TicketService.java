@@ -1,30 +1,21 @@
 package ru.dmt100.flight_booking.ticket.service;
 
-import org.springframework.http.ResponseEntity;
-import ru.dmt100.flight_booking.ticket.dto.TicketDtoResponse;
+import ru.dmt100.flight_booking.ticket.dto.record.PassengersInfoByFlightId;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
-import ru.dmt100.flight_booking.ticket.model.Ticket;
+import ru.dmt100.flight_booking.ticket.dto.record.TicketOnScheduledFlightsByTimeRange;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TicketService {
 
-    TicketLiteDtoResponse save(Long userId, Ticket ticket);
+    List<Optional<TicketLiteDtoResponse>> findPassengersInfoByListOfTicketNos(
+            Long userId, List<String> passengersTicketNos);
 
-    TicketLiteDtoResponse getTicketLiteDtoResponse(Long userId, String ticketNo);
-
-
-    List<TicketLiteDtoResponse> findAllTicketsLite(Long userId);
-
-
-    TicketLiteDtoResponse update(Long userId, Ticket ticket);
-
-    ResponseEntity<?> delete(Long userId, String ticketNo);
-
-
-    TicketDtoResponse getTicketDtoResponse(Long userId, Long ticketNo);
-
-    TicketDtoResponse getTicketById(Long userId, Long ticketNo);
+    List<PassengersInfoByFlightId> findPassengersInfoByFlightId(Long userId, Long flightId);
+    List<TicketOnScheduledFlightsByTimeRange> getCountTicketsOnScheduledFlightsByTimeRange(
+            Long userId, LocalDateTime start, LocalDateTime end);
 
 
 

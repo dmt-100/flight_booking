@@ -1,36 +1,42 @@
 package ru.dmt100.flight_booking.booking;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.booking.model.Booking;
-import ru.dmt100.flight_booking.booking.model.dto.*;
+import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.records.*;
 import ru.dmt100.flight_booking.booking.service.BookingService;
 import ru.dmt100.flight_booking.dao.Dao;
+import ru.dmt100.flight_booking.util.ResponseUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static ru.dmt100.flight_booking.constant.Constant.USER_ID;
-import static ru.dmt100.flight_booking.constant.Constant.X_PROCESSING_TIME;
+import static ru.dmt100.flight_booking.constant.Constant.*;
 
 @RestController
-@AllArgsConstructor
 @RequestMapping("/booking")
 public class BookingController {
 
-    @Qualifier("BookingDaoImpl")
     private final Dao bookingDao;
-
-    @Qualifier("BookingServiceImpl")
     private final BookingService bookingService;
+
+    @Autowired
+    public BookingController(@Qualifier("bookingDaoImpl") Dao bookingDao,
+                             @Qualifier("bookingServiceImpl") BookingService bookingService) {
+        this.bookingDao = bookingDao;
+        this.bookingService = bookingService;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Optional<BookingDtoResponse>> createBooking(
+    public ResponseEntity<Optional<BookingDtoResponse>> save(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Booking booking) {
         double timeStart = System.currentTimeMillis();
@@ -45,7 +51,7 @@ public class BookingController {
     }
 
     @GetMapping("/{bookRef}")
-    public ResponseEntity<Optional<BookingDtoResponse>> getBookingById(
+    public ResponseEntity<Optional<BookingDtoResponse>> find(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
         double timeStart = System.currentTimeMillis();
@@ -60,7 +66,7 @@ public class BookingController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<BookingLiteDtoResponse>> getAllBookings(
+    public ResponseEntity<List<BookingLiteDtoResponse>> findAllBookings(
             @RequestHeader(value = USER_ID, required = false) Long userId) {
         double timeStart = System.currentTimeMillis();
 
@@ -69,6 +75,7 @@ public class BookingController {
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
         headers.add(X_PROCESSING_TIME, qTime + " sec.");
+        headers.add(X_TOTAL_RECORDS, String.valueOf(bookings.size()));
 
         return ResponseEntity.ok().headers(headers).body(bookings);
     }
@@ -106,83 +113,75 @@ public class BookingController {
     }
 
 
-
-    @GetMapping("/bookingRef/{bookRef}")
-    public ResponseEntity<List<PassengerInfo>> getPassengersInfoByBooking(
-            @RequestHeader(value = USER_ID, required = false) Long userId,
-            @PathVariable String bookRef) {
-        double timeStart = System.currentTimeMillis();
-
-        List<PassengerInfo> passengerInfos = bookingService.findPassengersInfoByBookingId(userId, bookRef);
-
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, qTime + " sec.");
-
-        return ResponseEntity.ok().headers(headers).body(passengerInfos);
-    }
-
-    @GetMapping("/flightId/{flightId}")
-    public ResponseEntity<List<PassengerInfo>> getPassengersInfoByFlight(
-            @RequestHeader(value = USER_ID, required = false) Long userId,
-            @PathVariable Long flightId) {
-        double timeStart = System.currentTimeMillis();
-
-        List<PassengerInfo> passengerInfos = bookingService.findPassengersInfoByFlightId(userId, flightId);
-
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, qTime + " sec.");
-        headers.add("X-Total-Records", String.valueOf(passengerInfos.size()));
-
-        return ResponseEntity.ok()
-                .header(X_PROCESSING_TIME, qTime + " sec.")
-                .header("X-Total-Records", String.valueOf(passengerInfos.size()))
-                .body(passengerInfos);
-    }
-
     @GetMapping("/flight/{flightId}")
-    public ResponseEntity<List<BookingDtoResponse>> getBookingsByFlightId(
+    public ResponseEntity<?> findBookingsByFlightId(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable Long flightId) {
         double timeStart = System.currentTimeMillis();
 
         List<BookingDtoResponse> bookings = bookingService.getBookingsByFlightId(userId, flightId);
 
+        return ResponseUtil.headersMaker(timeStart, bookings);
+    }
+
+    @GetMapping("/stats/daily")
+    public ResponseEntity<?> getBookingStatsDaily(
+            @RequestHeader(value = USER_ID, required = false) Long userId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<DailyBookingStats> stats = bookingService.getDailyBookingStats(userId);
+
+        return ResponseUtil.headersMaker(timeStart, stats);
+    }
+
+    @GetMapping("/stats/weekly")
+    public ResponseEntity<?> getBookingStatsWeekly(
+            @RequestHeader(value = USER_ID, required = false) Long userId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<WeeklyBookingStats> stats = bookingService.getWeeklyBookingStats(userId);
+
+        return ResponseUtil.headersMaker(timeStart, stats);
+    }
+
+    @GetMapping("/stats/spentByPassenger/{limit}")
+    public ResponseEntity<?> getTotalAmountSpentByPassenger(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @PathVariable int limit) {
+        double timeStart = System.currentTimeMillis();
+
+        List<TotalAmountSpentByPassenger> stats = bookingService.getTotalAmountSpentByPassenger(userId, limit);
+
+        return ResponseUtil.headersMaker(timeStart, stats);
+    }
+
+    @GetMapping("/stats/revenueByBookingByAirport")
+    public ResponseEntity<List<RevenueByBookingsByAirport>> getRevenueByBookingByAirport(
+            @RequestHeader(value = USER_ID, required = false) Long userId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<RevenueByBookingsByAirport> stats =
+                bookingService.getTotalRevenueByBookingsByAirport(userId);
+
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
         headers.add(X_PROCESSING_TIME, qTime + " sec.");
+        headers.add(X_TOTAL_RECORDS, String.valueOf(stats.size()));
 
-        return ResponseEntity.ok().headers(headers).body(bookings);
+        return ResponseEntity.ok().headers(headers).body(stats);
     }
 
-    @GetMapping("/statistics/daily")
-    public ResponseEntity<List<BookingStatisticsDateDto>> getDailyBookingStatistics(
-            @RequestHeader(value = USER_ID, required = false) Long userId) {
+    @GetMapping("/stats/summaryBookCountWithClassification")
+    public ResponseEntity<?> getSummaryClassification(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
         double timeStart = System.currentTimeMillis();
 
-        List<BookingStatisticsDateDto> statistics = bookingService.getStats_RevenueByDate(userId);
+        List<SummaryBookCountWithClassification> stats = bookingService
+                .getSummaryClassification(userId, startDate, endDate);
 
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Processing-Time", qTime + " sec.");
-
-        return ResponseEntity.ok().headers(headers).body(statistics);
+        return ResponseUtil.headersMaker(timeStart, stats);
     }
-
-    @GetMapping("/statistics/weekly")
-    public ResponseEntity<List<BookingStatisticsWeekDto>> getWeeklyBookingSummary(
-            @RequestHeader(value = USER_ID, required = false) Long userId) {
-        double timeStart = System.currentTimeMillis();
-
-        List<BookingStatisticsWeekDto> statistics = bookingService.getStats_RevenueByWeek(userId);
-
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Processing-Time", qTime + " sec.");
-
-        return ResponseEntity.ok().headers(headers).body(statistics);
-    }
-
 
 }

@@ -9,10 +9,10 @@ import ru.dmt100.flight_booking.booking.model.Booking;
 import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
 import ru.dmt100.flight_booking.dao.Dao;
 import ru.dmt100.flight_booking.exception.*;
+import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 import ru.dmt100.flight_booking.util.MapConverter;
-import ru.dmt100.flight_booking.sql.SqlQuery;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -36,9 +36,9 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
         var bookRef = booking.getBookRef();
 
         try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getCREATE_BOOKING())) {
+             var stmt = con.prepareStatement(sqlQuery.getNEW_BOOKING())) {
 
-            if (isBookingPresence(con, bookRef)) {
+            if (isBookingExist(con, bookRef)) {
                 throw new AlreadyExistException("Booking " + bookRef + ", already exist");
             }
 
@@ -50,7 +50,7 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
             if (row == 0) {
                 throw new SaveException("Failed to insert a booking.");
             }
-            bookingDtoResponse = fetchBooking(con, booking.getBookRef());
+            bookingDtoResponse = fetch(con, booking.getBookRef());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -62,10 +62,8 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
 
         try (Connection con = ConnectionManager.open()) {
 
-            booking = Optional.ofNullable(fetchBooking(con, bookRef)
+            booking = Optional.ofNullable(fetch(con, bookRef)
                     .orElseThrow(() -> new NotFoundException("Booking " + bookRef + ", does not exist")));;
-
-            booking.ifPresent(b -> b.setTickets(getTicketsByBookRef(con, bookRef)));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -75,29 +73,24 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
 
 
     @Override
-    public List<BookingDtoResponse> findAll(Long userId) {
-        long timeStart = System.currentTimeMillis();
-        List<BookingDtoResponse> bookings = new ArrayList<>();
-        BookingDtoResponse booking;
+    public List<Optional<BookingDtoResponse>> findAll(Long userId) {
+        List<Optional<BookingDtoResponse>> bookings = new ArrayList<>();
 
         try (var con = ConnectionManager.open();
              var stmt = con.prepareStatement(sqlQuery.getALL_BOOKINGS());
              var rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                booking = new BookingDtoResponse();
                 String bookRef = rs.getString("book_ref");
-                booking.setBookRef(bookRef);
-                booking.setBookDate(rs.getTimestamp("book_date")
-                        .toInstant().atZone(ZoneId.systemDefault()));
-                booking.setTotalAmount(rs.getBigDecimal("total_amount"));
 
+                Optional<BookingDtoResponse> booking;
+
+                booking = fetch(con, bookRef);
                 bookings.add(booking);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(System.currentTimeMillis() - timeStart);
         return bookings;
     }
 
@@ -109,7 +102,7 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
         try (var con = ConnectionManager.open();
              var stmt = con.prepareStatement(sqlQuery.getUPDATE_BOOKING())) {
 
-            if (!isBookingPresence(con, bookRef)) {
+            if (!isBookingExist(con, bookRef)) {
                 throw new NotFoundException("Booking " + bookRef + ", does not exist");
             } else {
 
@@ -138,7 +131,7 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
              var stmt2 = con.prepareStatement(sqlQuery.getDELETE_TICKETS_BY_BOOK_REF());
              var stmt3 = con.prepareStatement(sqlQuery.getDELETE_BOOKING_BY_BOOK_REF())) {
 
-            if (!isBookingPresence(con, bookRef)) {
+            if (!isBookingExist(con, bookRef)) {
                 throw new NotFoundException("Booking: " + bookRef + ", does not exist");
             }
 
@@ -168,7 +161,8 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
         return true;
     }
 
-    private Optional<BookingDtoResponse> fetchBooking(Connection con, String bookRef) {
+
+    private Optional<BookingDtoResponse> fetch(Connection con, String bookRef) {
         try (var stmt = con.prepareStatement(sqlQuery.getBOOKING_BY_BOOK_REF())) {
 
             stmt.setString(1, bookRef);
@@ -186,7 +180,7 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
                             .atZone(ZoneId.systemDefault());
                     BigDecimal totalAmount = rs.getBigDecimal("total_amount");
                     bookingDtoResponse = new BookingDtoResponse(
-                            bookingRef, zonedDateTime, totalAmount, new HashSet<>());
+                            bookingRef, zonedDateTime, totalAmount);
 
                     return Optional.of(bookingDtoResponse);
                 }
@@ -226,8 +220,8 @@ public class BookingDaoImpl implements Dao<Long, String, Booking, BookingDtoResp
         return tickets;
     }
 
-    public boolean isBookingPresence(Connection con, String bookRef) {
-        try (var stmt = con.prepareStatement(sqlQuery.getIS_BOOKING_PRESENT())) {
+    private boolean isBookingExist(Connection con, String bookRef) {
+        try (var stmt = con.prepareStatement(sqlQuery.getCHECKING_BOOK_REF())) {
 
             stmt.setString(1, bookRef);
             var rs = stmt.executeQuery();
