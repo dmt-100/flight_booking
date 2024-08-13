@@ -1,6 +1,6 @@
 package ru.dmt100.flight_booking.booking.service;
 
-import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
 import ru.dmt100.flight_booking.booking.model.dto.records.*;
 
 import java.time.LocalDate;
@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface BookingService {
 
-    List<BookingDtoResponse> getBookingsByFlightId(Long userId, Long flightId);
+    List<BookingDto> getBookingsByFlightId(Long userId, Long flightId);
 
     List<DailyBookingStats> getDailyBookingStats(Long userId);
 

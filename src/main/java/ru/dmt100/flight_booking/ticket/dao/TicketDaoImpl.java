@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
 @Service("ticketDaoImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoResponse> {
+public class TicketDaoImpl implements Dao<Long, String, Integer, Boolean, Ticket, TicketLiteDtoResponse> {
     SqlQuery sqlQuery;
 
     @Override
@@ -74,12 +74,12 @@ public class TicketDaoImpl implements Dao<Long, String, Ticket, TicketLiteDtoRes
         return ticketLiteDtoResponse;
     }
 
-    public List<Optional<TicketLiteDtoResponse>> findAll(Long userId) {
+    public List<Optional<TicketLiteDtoResponse>> findAll(Long userId, Integer limit) {
         List<Optional<TicketLiteDtoResponse>> tickets = new ArrayList<>();
 
         try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS())) {
-
+             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS_WITH_LIMIT())) {
+           stmt.setInt(1, limit);
             var rs = stmt.executeQuery();
             while (rs.next()) {
                 String ticketNo = rs.getString("ticket_no");

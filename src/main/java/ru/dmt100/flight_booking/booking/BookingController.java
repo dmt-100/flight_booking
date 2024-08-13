@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.booking.model.Booking;
-import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
-import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDto;
 import ru.dmt100.flight_booking.booking.model.dto.records.*;
 import ru.dmt100.flight_booking.booking.service.BookingService;
 import ru.dmt100.flight_booking.dao.Dao;
@@ -36,12 +36,12 @@ public class BookingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Optional<BookingDtoResponse>> save(
+    public ResponseEntity<Optional<BookingDto>> save(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestBody Booking booking) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<BookingDtoResponse> bookingDtoResponse = bookingDao.save(userId, booking);
+        Optional<BookingDto> bookingDtoResponse = bookingDao.save(userId, booking);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000.0;
         HttpHeaders headers = new HttpHeaders();
@@ -51,12 +51,12 @@ public class BookingController {
     }
 
     @GetMapping("/{bookRef}")
-    public ResponseEntity<Optional<BookingDtoResponse>> find(
+    public ResponseEntity<Optional<BookingDto>> find(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<BookingDtoResponse> booking = bookingDao.find(userId, bookRef);
+        Optional<BookingDto> booking = bookingDao.find(userId, bookRef);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -66,11 +66,12 @@ public class BookingController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<BookingLiteDtoResponse>> findAllBookings(
-            @RequestHeader(value = USER_ID, required = false) Long userId) {
+    public ResponseEntity<List<BookingLiteDto>> findAllBookings(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @PathVariable Integer limit) {
         double timeStart = System.currentTimeMillis();
 
-        List<BookingLiteDtoResponse> bookings = bookingDao.findAll(userId);
+        List<BookingLiteDto> bookings = bookingDao.findAll(userId, limit);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -80,15 +81,14 @@ public class BookingController {
         return ResponseEntity.ok().headers(headers).body(bookings);
     }
 
-    @PatchMapping("/{bookRef}")
+    @PatchMapping()
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<Optional<BookingDtoResponse>> update(
+    public ResponseEntity<Optional<BookingDto>> update(
             @RequestHeader(value = USER_ID, required = false) Long userId,
-            @PathVariable String bookRef,
             @RequestBody Booking bookingDtoRequest) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<BookingDtoResponse> bookingDtoResponse = bookingDao.update(userId, bookingDtoRequest);
+        Optional<BookingDto> bookingDtoResponse = bookingDao.update(userId, bookingDtoRequest);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -119,7 +119,7 @@ public class BookingController {
             @PathVariable Long flightId) {
         double timeStart = System.currentTimeMillis();
 
-        List<BookingDtoResponse> bookings = bookingService.getBookingsByFlightId(userId, flightId);
+        List<BookingDto> bookings = bookingService.getBookingsByFlightId(userId, flightId);
 
         return ResponseUtil.headersMaker(timeStart, bookings);
     }

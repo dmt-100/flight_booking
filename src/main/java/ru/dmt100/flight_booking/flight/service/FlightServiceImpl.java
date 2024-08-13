@@ -22,6 +22,23 @@ public class FlightServiceImpl implements FlightService {
     private final SqlQuery sqlQuery;
 
     @Override
+    public List<String> findAllTicketsByFlightId(Long userId, Long flightId) {
+        List<String> tickets = new ArrayList<>();
+        try (var con = ConnectionManager.open();
+             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS_ID_BY_FLIGHT_ID())) {
+            stmt.setLong(1, flightId);
+            try(var rs = stmt.executeQuery()) {
+                while(rs.next()) {
+                    tickets.add(rs.getString("ticket_no"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return tickets;
+    }
+
+    @Override
     public List<FlightCountByStatus> getFlightCountByStatus() {
         List<FlightCountByStatus> stats = new ArrayList<>();
         FlightCountByStatus statusCount;

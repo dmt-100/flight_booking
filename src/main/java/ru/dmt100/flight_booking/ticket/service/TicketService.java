@@ -14,6 +14,7 @@ public interface TicketService {
             Long userId, List<String> passengersTicketNos);
 
     List<PassengersInfoByFlightId> findPassengersInfoByFlightId(Long userId, Long flightId);
+
     List<TicketOnScheduledFlightsByTimeRange> getCountTicketsOnScheduledFlightsByTimeRange(
             Long userId, LocalDateTime start, LocalDateTime end);
 

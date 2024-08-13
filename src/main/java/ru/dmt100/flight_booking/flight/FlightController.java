@@ -62,20 +62,6 @@ public class FlightController {
         return ResponseEntity.ok().headers(headers).body(flightDtoResponse);
     }
 
-    @GetMapping("")
-    public ResponseEntity<List<FlightDto>> findAllTickets(
-            @RequestHeader(value = USER_ID, required = false) Long userId) {
-        double timeStart = System.currentTimeMillis();
-
-        List<FlightDto> flightDto = flightDao.findAll(userId);
-
-        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(X_PROCESSING_TIME, qTime + " sec.");
-
-        return ResponseEntity.ok().headers(headers).body(flightDto);
-    }
-
     @PatchMapping()
     public ResponseEntity<Optional<FlightDto>> update(
             @RequestHeader(value = USER_ID, required = false) Long userId,
@@ -122,7 +108,21 @@ public class FlightController {
         return ResponseEntity.ok().headers(headers).body("Are flights deleted: " + areFlightsDeleted);
 
     }
-// Statistics queries
+
+
+    //Service
+    @GetMapping("/all-tickets/{flightId}")
+    public ResponseEntity<List<String>> findAllTicketsByFlightId(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @PathVariable Long flightId) {
+        double timeStart = System.currentTimeMillis();
+
+        List<String> tickets = flightService.findAllTicketsByFlightId(userId, flightId);
+
+        return headersMaker(timeStart, tickets);
+    }
+
+    // Statistics queries
     @GetMapping("/stats/flightCountByStatus")
     public ResponseEntity<List<FlightCountByStatus>> getFlightCountByStatus() {
         double timeStart = System.currentTimeMillis();

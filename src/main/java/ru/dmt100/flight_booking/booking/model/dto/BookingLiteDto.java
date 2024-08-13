@@ -14,7 +14,7 @@ import java.util.Set;
 @Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BookingLiteDtoResponse {
+public class BookingLiteDto {
 
     @JsonProperty("book_ref")
     String bookRef;

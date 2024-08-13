@@ -65,11 +65,12 @@ public class TicketController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> findAllTickets(
-            @RequestHeader(value = USER_ID, required = false) Long userId) {
+    public ResponseEntity<?> findAll(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestParam(value = "limit", required = false) Integer limit) {
         double timeStart = System.currentTimeMillis();
 
-        List<TicketLiteDtoResponse> tickets = ticketDao.findAll(userId);
+        List<TicketLiteDtoResponse> tickets = ticketDao.findAll(userId, limit);
 
         return ResponseUtil.headersMaker(timeStart, tickets);
     }
@@ -120,6 +121,9 @@ public class TicketController {
         return ResponseEntity.ok().headers(headers).body("Are tickets deleted: " + areTicketsDeleted);
 
     }
+
+
+
 
     @GetMapping("/passengerInfo")
     public ResponseEntity<?> getPassengerInfoByListOfTicketNos(

@@ -2,6 +2,7 @@ package ru.dmt100.flight_booking.ticket.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import ru.dmt100.flight_booking.boardingPass.model.dto.BoardingPassDto;
 
 import java.util.Map;
 

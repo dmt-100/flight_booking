@@ -29,7 +29,7 @@ import java.util.Optional;
 @Service("flightDaoImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class FlightDaoImpl implements Dao<Long, String, Flight, FlightDto> {
+public class FlightDaoImpl implements Dao<Long, String, Integer, Boolean, Flight, FlightDto> {
     SqlQuery sqlQuery;
 
     @Override
@@ -55,10 +55,9 @@ public class FlightDaoImpl implements Dao<Long, String, Flight, FlightDto> {
                 throw new SaveException("Failed to insert a flight.");
             }
 
-            // Получаем сгенерированный ключ
             try (var rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    Long id = rs.getLong(1);
+                    long id = rs.getLong(1);
                     flight = fetch(con, Long.valueOf(Long.toString(id)));
                 } else {
                     throw new SaveException("Failed to retrieve the generated flight ID.");
@@ -88,7 +87,7 @@ public class FlightDaoImpl implements Dao<Long, String, Flight, FlightDto> {
     }
 
     @Override
-    public List<Optional<FlightDto>> findAll(Long userId) {
+    public List<Optional<FlightDto>> findAll(Long userId, Integer limit) {
         List<Optional<FlightDto>> flights = new ArrayList<>();
 
         try (var con = ConnectionManager.open();

@@ -69,6 +69,7 @@ public class ConnectionManager {
             String URL_KEY = "spring.datasource.url";
             String USERNAME_KEY = "spring.datasource.username";
             String PASSWORD_KEY = "spring.datasource.password";
+            DriverManager.setLoginTimeout(20);
             return DriverManager.getConnection(
                     PropertyUtil.getKey(URL_KEY),
                     PropertyUtil.getKey(USERNAME_KEY),

@@ -3,7 +3,7 @@ package ru.dmt100.flight_booking.booking.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.dmt100.flight_booking.booking.dao.BookingDaoImpl;
-import ru.dmt100.flight_booking.booking.model.dto.BookingDtoResponse;
+import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
 import ru.dmt100.flight_booking.booking.model.dto.records.*;
 import ru.dmt100.flight_booking.exception.NotFoundException;
 import ru.dmt100.flight_booking.sql.SqlQuery;
@@ -26,9 +26,9 @@ public class BookingServiceImpl implements BookingService {
     private final SqlQuery sqlQuery;
 
     @Override
-    public List<BookingDtoResponse> getBookingsByFlightId(Long userId, Long flightId) {
-        List<BookingDtoResponse> bookingDtoResponses = new ArrayList<>();
-        Optional<BookingDtoResponse> bookingDtoResponse;
+    public List<BookingDto> getBookingsByFlightId(Long userId, Long flightId) {
+        List<BookingDto> bookingDtoRespons = new ArrayList<>();
+        Optional<BookingDto> bookingDtoResponse;
 
         try (var con = ConnectionManager.open();
              var checkStmt = con.prepareStatement(sqlQuery.getCHECKING_FLIGHT_ID());
@@ -44,13 +44,13 @@ public class BookingServiceImpl implements BookingService {
 
                 while (rs.next()) {
                     bookingDtoResponse = bookingDao.find(userId, rs.getString(1));
-                    bookingDtoResponse.ifPresent(bookingDtoResponses::add);
+                    bookingDtoResponse.ifPresent(bookingDtoRespons::add);
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return bookingDtoResponses;
+        return bookingDtoRespons;
     }
 
     @Override
