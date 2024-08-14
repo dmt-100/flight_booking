@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class TicketDtoResponse {
     String passengerName;
 
     @JsonProperty("contact_data")
-    String contactData;
+    Map<String, String> contactData;
 
     @JsonProperty("flight_no")
     String flightNo;
@@ -54,4 +55,6 @@ public class TicketDtoResponse {
 
     @JsonProperty("aircraft_model")
     String aircraftModel;
+
+    String boardingPassCompositeKey;
 }

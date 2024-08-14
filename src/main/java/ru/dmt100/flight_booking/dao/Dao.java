@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface Dao<U, K, I, B, T1, T2> {
-
-
     Optional<T2> save(U u, T1 t1);
 
     Optional<T2> find(U u, K k);

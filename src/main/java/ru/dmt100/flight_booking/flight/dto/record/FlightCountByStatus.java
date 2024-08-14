@@ -1,6 +1,6 @@
 package ru.dmt100.flight_booking.flight.dto.record;
 
-import ru.dmt100.flight_booking.enums.Status;
+import ru.dmt100.flight_booking.airport.enums.Status;
 
 public record FlightCountByStatus(
         Status status,

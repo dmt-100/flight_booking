@@ -1,9 +1,10 @@
 package ru.dmt100.flight_booking.ticket.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
-import ru.dmt100.flight_booking.boardingPass.model.dto.BoardingPassDto;
 
+import java.util.List;
 import java.util.Map;
 
 @Builder
@@ -12,6 +13,13 @@ import java.util.Map;
 @Getter
 @Setter
 @ToString
+@JsonPropertyOrder({
+        "ticket_no",
+        "book_ref",
+        "passenger_id",
+        "passenger_name",
+        "contact_data",
+        "boardingPassCompositeKeys" })
 public class TicketLiteDtoResponse {
 
     @JsonProperty("ticket_no")
@@ -28,5 +36,7 @@ public class TicketLiteDtoResponse {
 
     @JsonProperty("contact_data")
     Map<String, String> contactData;
+
+    List<String> boardingPassCompositeKeys;
 
 }

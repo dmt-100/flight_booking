@@ -14,10 +14,7 @@ import ru.dmt100.flight_booking.util.MapConverter;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -160,11 +157,15 @@ public class TicketDaoImpl implements Dao<Long, String, Integer, Boolean, Ticket
 
     public Optional<TicketLiteDtoResponse> fetch(Connection con, String ticketNo) {
         TicketLiteDtoResponse ticketLiteDtoResponse = new TicketLiteDtoResponse();
+        List<String> bpCompositeKeys = new ArrayList<>();
 
-        try (var stmt = con.prepareStatement(sqlQuery.getTICKET_BY_TICKET_NO())) {
+        try (var stmt = con.prepareStatement(sqlQuery.getTICKET_BY_TICKET_NO());
+        var stmt2 = con.prepareStatement(sqlQuery.getTICKET_NO_FLIGHT_ID_FROM_BOARDING_PASSES())) {
+            stmt2.setString(1, ticketNo);
 
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
+            var rs2 = stmt2.executeQuery();
             if (rs.next()) {
                 String bookRef = rs.getString("book_ref");
                 Long passengerId = Long.parseLong(rs.getString("passenger_id")
@@ -174,9 +175,13 @@ public class TicketDaoImpl implements Dao<Long, String, Integer, Boolean, Ticket
                         rs.getString("contact_data") : null;
 
                 Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataJson);
+                while (rs2.next()) {
+                    String formatted = rs2.getString(1) + "_" + rs2.getString(2);
+                    bpCompositeKeys.add(formatted);
+                }
 
                 ticketLiteDtoResponse = new TicketLiteDtoResponse(
-                        ticketNo, bookRef, passengerId, passengerName, contactData);
+                        ticketNo, bookRef, passengerId, passengerName, contactData, bpCompositeKeys);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

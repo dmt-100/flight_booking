@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.dmt100.flight_booking.enums.Status;
+import ru.dmt100.flight_booking.airport.enums.Status;
 import ru.dmt100.flight_booking.flight.dto.record.*;
 import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.util.ConnectionManager;

@@ -2,9 +2,9 @@ package ru.dmt100.flight_booking.booking.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.dmt100.flight_booking.booking.dao.BookingDaoImpl;
-import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
-import ru.dmt100.flight_booking.booking.model.dto.records.*;
+import ru.dmt100.flight_booking.booking.fetcher.BookingFetcherImpl;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDto;
+import ru.dmt100.flight_booking.booking.model.dto.stats.*;
 import ru.dmt100.flight_booking.exception.NotFoundException;
 import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.util.ConnectionManager;
@@ -22,13 +22,12 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service("bookingServiceImpl")
 public class BookingServiceImpl implements BookingService {
-    private final BookingDaoImpl bookingDao;
     private final SqlQuery sqlQuery;
+    private final BookingFetcherImpl bookingFetcher;
 
-    @Override
-    public List<BookingDto> getBookingsByFlightId(Long userId, Long flightId) {
-        List<BookingDto> bookingDtoRespons = new ArrayList<>();
-        Optional<BookingDto> bookingDtoResponse;
+    public List<BookingLiteDto> findBookingsByFlightId(Long userId, Long flightId) {
+        List<BookingLiteDto> BookingLiteDtos = new ArrayList<>();
+        Optional<BookingLiteDto> bookingDtoResponse;
 
         try (var con = ConnectionManager.open();
              var checkStmt = con.prepareStatement(sqlQuery.getCHECKING_FLIGHT_ID());
@@ -43,14 +42,14 @@ public class BookingServiceImpl implements BookingService {
                 var rs = stmt.executeQuery();
 
                 while (rs.next()) {
-                    bookingDtoResponse = bookingDao.find(userId, rs.getString(1));
-                    bookingDtoResponse.ifPresent(bookingDtoRespons::add);
+                    bookingDtoResponse = bookingFetcher.fetch(con, rs.getString(1));
+                    bookingDtoResponse.ifPresent(BookingLiteDtos::add);
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return bookingDtoRespons;
+        return BookingLiteDtos;
     }
 
     @Override

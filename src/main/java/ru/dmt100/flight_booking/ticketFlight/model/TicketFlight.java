@@ -3,7 +3,7 @@ package ru.dmt100.flight_booking.ticketFlight.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.dmt100.flight_booking.enums.FareConditions;
+import ru.dmt100.flight_booking.airport.enums.FareConditions;
 import ru.dmt100.flight_booking.flight.model.Flight;
 
 import java.math.BigDecimal;

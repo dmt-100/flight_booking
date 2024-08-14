@@ -1,12 +1,12 @@
 package ru.dmt100.flight_booking.booking.dao;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.dmt100.flight_booking.booking.fetcher.BookingFetcherImpl;
 import ru.dmt100.flight_booking.booking.model.Booking;
-import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
+import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDto;
 import ru.dmt100.flight_booking.dao.Dao;
 import ru.dmt100.flight_booking.exception.*;
 import ru.dmt100.flight_booking.sql.SqlQuery;
@@ -14,25 +14,28 @@ import ru.dmt100.flight_booking.ticket.dto.TicketLiteDtoResponse;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 import ru.dmt100.flight_booking.util.MapConverter;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-@AllArgsConstructor
 @Primary
-public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booking, BookingDto> {
-    SqlQuery sqlQuery;
+public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booking, BookingLiteDto> {
+    private SqlQuery sqlQuery;
+    private BookingFetcherImpl bookingFetcher;
+
+    public BookingDaoImpl(SqlQuery sqlQuery,
+                          BookingFetcherImpl bookingFetcher) {
+        this.sqlQuery = sqlQuery;
+        this.bookingFetcher = bookingFetcher;
+    }
 
     @Override
-    public Optional<BookingDto> save(Long userId, Booking booking) {
-        Optional<BookingDto> bookingDtoResponse;
+    public Optional<BookingLiteDto> save(Long userId, Booking booking) {
+        Optional<BookingLiteDto> bookingDtoResponse;
         var bookRef = booking.getBookRef();
 
         try(var con = ConnectionManager.open()) {
@@ -51,7 +54,7 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
                 if (row == 0) {
                     throw new SaveException("Failed to insert a booking.");
                 }
-                bookingDtoResponse = fetch(con, booking.getBookRef());
+                bookingDtoResponse = bookingFetcher.fetch(con, booking.getBookRef());
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -59,12 +62,13 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
         return bookingDtoResponse;
     }
 
-    public Optional<BookingDto> find(Long userId, String bookRef) {
-        Optional<BookingDto> booking;
+    @Override
+    public Optional<BookingLiteDto> find(Long userId, String bookRef) {
+        Optional<BookingLiteDto> booking;
 
         try (Connection con = ConnectionManager.open()) {
 
-            booking = Optional.ofNullable(fetch(con, bookRef)
+            booking = Optional.ofNullable(bookingFetcher.fetch(con, bookRef)
                     .orElseThrow(() -> new NotFoundException("Booking " + bookRef + ", does not exist")));;
 
         } catch (SQLException e) {
@@ -75,8 +79,8 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
 
 
     @Override
-    public List<Optional<BookingDto>> findAll(Long userId, Integer Limit) {
-        List<Optional<BookingDto>> bookings = new ArrayList<>();
+    public List<Optional<BookingLiteDto>> findAll(Long userId, Integer Limit) {
+        List<Optional<BookingLiteDto>> bookings = new ArrayList<>();
 
         try (var con = ConnectionManager.open();
              var stmt = con.prepareStatement(sqlQuery.getALL_BOOKINGS());
@@ -85,9 +89,9 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
             while (rs.next()) {
                 String bookRef = rs.getString("book_ref");
 
-                Optional<BookingDto> booking;
+                Optional<BookingLiteDto> booking;
 
-                booking = fetch(con, bookRef);
+                booking = bookingFetcher.fetch(con, bookRef);
                 bookings.add(booking);
             }
         } catch (SQLException e) {
@@ -97,8 +101,8 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
     }
 
     @Override
-    public Optional<BookingDto> update(Long userId, Booking booking) {
-        Optional<BookingDto> bookingDtoResponse;
+    public Optional<BookingLiteDto> update(Long userId, Booking booking) {
+        Optional<BookingLiteDto> bookingDtoResponse;
         String bookRef = booking.getBookRef();
 
         try (var con = ConnectionManager.open();
@@ -163,37 +167,7 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
         return true;
     }
 
-
-    private Optional<BookingDto> fetch(Connection con, String bookRef) {
-        try (var stmt = con.prepareStatement(sqlQuery.getBOOKING_BY_BOOK_REF())) {
-
-            stmt.setString(1, bookRef);
-
-            try (var rs = stmt.executeQuery()) {
-
-                if (!rs.next()) {
-                    throw new NotFoundException("Booking " + bookRef + ", does not exist");
-                } else {
-                    BookingDto bookingDto;
-                    String bookingRef = rs.getString("book_ref");
-                    ZonedDateTime zonedDateTime = rs
-                            .getTimestamp("book_date")
-                            .toInstant()
-                            .atZone(ZoneId.systemDefault());
-                    BigDecimal totalAmount = rs.getBigDecimal("total_amount");
-                    bookingDto = new BookingDto(
-                            bookingRef, zonedDateTime, totalAmount);
-
-                    return Optional.of(bookingDto);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private Set<TicketLiteDtoResponse> getTicketsByBookRef(Connection con, String bookRef) {
-
         Set<TicketLiteDtoResponse> tickets = new HashSet<>();
         TicketLiteDtoResponse ticket;
 
@@ -208,12 +182,25 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
                 String passengerName = rs.getString("passenger_name");
                 String contactDataString = rs.getString("contact_data");
                 Map<String, String> contactData = new MapConverter().convertToEntityAttribute(contactDataString);
+
+                // added bpCompositeKeys
+                List<String> bpCompositeKeys = new ArrayList<>();
+                try (var stmt2 = con.prepareStatement(sqlQuery.getTICKET_NO_FLIGHT_ID_FROM_BOARDING_PASSES())) {
+                    stmt2.setString(1, ticketNo);
+                    var rs2 = stmt2.executeQuery();
+                    while (rs2.next()) {
+                        String formatted = rs2.getString(1) + "_" + rs2.getString(2);
+                        bpCompositeKeys.add(formatted);
+                    }
+                }
+
                 ticket = new TicketLiteDtoResponse(
                         ticketNo,
                         bookRef,
                         passengerId,
                         passengerName,
-                        contactData);
+                        contactData,
+                        bpCompositeKeys);
                 tickets.add(ticket);
             }
         } catch (SQLException e) {
@@ -234,5 +221,4 @@ public class BookingDaoImpl implements Dao<Long, String, Integer, Boolean, Booki
             throw new RuntimeException(e);
         }
     }
-
 }

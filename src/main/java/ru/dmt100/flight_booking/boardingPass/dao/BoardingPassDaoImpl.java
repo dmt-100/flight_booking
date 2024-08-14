@@ -31,7 +31,7 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
         var flightId = boardingPass.getFlightId();
 
         try (var con = ConnectionManager.open()) {
-            if (!validator.checkBoardingPass(con, boardingPass)) {
+            if (!validator.checkBoardingPass(con, ticketNo, flightId)) {
                 throw new RuntimeException("BoardingPass with ticket number " + ticketNo + " and flight ID " + flightId + " does not exist.");
             }
             var boardingNo = boardingPass.getBoardingNo();
@@ -105,7 +105,8 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
 
             try {
                 // Check if the combination of flight_id and seat_no already exists
-                try (var checkStmt = con.prepareStatement("SELECT 1 FROM boarding_passes WHERE ticket_no = ? and flight_id = ? AND seat_no = ?")) {
+                try (var checkStmt = con.prepareStatement(
+                        "SELECT 1 FROM boarding_passes WHERE ticket_no = ? and flight_id = ? AND seat_no = ?")) {
                     checkStmt.setString(1, ticketNo);
                     checkStmt.setLong(2, flightId);
                     checkStmt.setString(3, seatNo);
@@ -154,19 +155,26 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
     }
 
     @Override
-    public boolean delete(Long userId, String ticketNo) {
+    public boolean delete(Long userId, String ticketNoflightId) {
+        String[] parts = ticketNoflightId.split("_");
+        String ticketNoKey = parts[0];
+        Long flightIdKey = Long.parseLong(parts[1]);
+
         try (var con = ConnectionManager.open()) {
-            if (validator.checkBoardingPass(con, ticketNo)) {
-                throw new NotFoundException("Boarding Pass " + ticketNo + ", does not exist");
+            if (!validator.checkBoardingPass(con, ticketNoKey, flightIdKey)) {
+                throw new NotFoundException(
+                        "Boarding Pass with composite key: " + ticketNoKey + "_" +flightIdKey +", does not exist");
             }
             try (var stmt = con.prepareStatement(sqlQuery.getDELETE_BOARDING_PASS())) {
-                stmt.setString(1, ticketNo);
+                stmt.setString(1, ticketNoKey);
+                stmt.setLong(2, flightIdKey);
                 var rs = stmt.executeUpdate();
                 if (rs == 0) {
-                    throw new DeleteException("Failed to delete boarding pass: " + ticketNo);
+                    throw new DeleteException(
+                            "Failed to delete boarding pass with composite key: " + ticketNoKey + "_" +flightIdKey);
                 }
             }
-            if (validator.checkBoardingPass(con, ticketNo)) {
+            if (!validator.checkBoardingPass(con, ticketNoKey, flightIdKey)) {
                 return true;
             }
         } catch (SQLException e) {
@@ -176,15 +184,26 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
     }
 
     @Override
-    public boolean deleteList(Long userId, List<String> ticketNos) {
-        for (String ticketNo : ticketNos) {
-            delete(userId, ticketNo);
+    public boolean deleteList(Long userId, List<String> compositeKeys) {
+        if (compositeKeys == null || compositeKeys.isEmpty()) {
+            return false;
+        }
+
+        for (String compositeKey : compositeKeys) {
+            try {
+                delete(userId, compositeKey);
+            } catch (Exception e) {
+                // Log the error or handle the exception
+                e.printStackTrace();
+                return false; // or continue processing the remaining items
+            }
         }
         return true;
     }
 
+
     private Optional<BoardingPassDto> fetch(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(sqlQuery.getBOARDING_PASS_BY_BOARDING_NO())) {
+        try (var stmt = con.prepareStatement(sqlQuery.getBOARDING_PASSES_BY_TICKET_NO())) {
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
             if (!rs.next()) {

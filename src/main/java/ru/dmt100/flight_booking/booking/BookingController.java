@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.booking.model.Booking;
 import ru.dmt100.flight_booking.booking.model.dto.BookingDto;
 import ru.dmt100.flight_booking.booking.model.dto.BookingLiteDto;
-import ru.dmt100.flight_booking.booking.model.dto.records.*;
+import ru.dmt100.flight_booking.booking.model.dto.stats.*;
 import ru.dmt100.flight_booking.booking.service.BookingService;
 import ru.dmt100.flight_booking.dao.Dao;
-import ru.dmt100.flight_booking.util.ResponseUtil;
+import ru.dmt100.flight_booking.util.HeadersMaker;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,12 +51,12 @@ public class BookingController {
     }
 
     @GetMapping("/{bookRef}")
-    public ResponseEntity<Optional<BookingDto>> find(
+    public ResponseEntity<Optional<BookingLiteDto>> find(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable String bookRef) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<BookingDto> booking = bookingDao.find(userId, bookRef);
+        Optional<BookingLiteDto> booking = bookingDao.find(userId, bookRef);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -112,16 +112,15 @@ public class BookingController {
         return ResponseEntity.noContent().headers(headers).build();
     }
 
-
     @GetMapping("/flight/{flightId}")
     public ResponseEntity<?> findBookingsByFlightId(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable Long flightId) {
         double timeStart = System.currentTimeMillis();
 
-        List<BookingDto> bookings = bookingService.getBookingsByFlightId(userId, flightId);
+        List<BookingLiteDto> bookings = bookingService.findBookingsByFlightId(userId, flightId);
 
-        return ResponseUtil.headersMaker(timeStart, bookings);
+        return HeadersMaker.make(timeStart, bookings);
     }
 
     @GetMapping("/stats/daily")
@@ -131,7 +130,7 @@ public class BookingController {
 
         List<DailyBookingStats> stats = bookingService.getDailyBookingStats(userId);
 
-        return ResponseUtil.headersMaker(timeStart, stats);
+        return HeadersMaker.make(timeStart, stats);
     }
 
     @GetMapping("/stats/weekly")
@@ -141,7 +140,7 @@ public class BookingController {
 
         List<WeeklyBookingStats> stats = bookingService.getWeeklyBookingStats(userId);
 
-        return ResponseUtil.headersMaker(timeStart, stats);
+        return HeadersMaker.make(timeStart, stats);
     }
 
     @GetMapping("/stats/spentByPassenger/{limit}")
@@ -152,7 +151,7 @@ public class BookingController {
 
         List<TotalAmountSpentByPassenger> stats = bookingService.getTotalAmountSpentByPassenger(userId, limit);
 
-        return ResponseUtil.headersMaker(timeStart, stats);
+        return HeadersMaker.make(timeStart, stats);
     }
 
     @GetMapping("/stats/revenueByBookingByAirport")
@@ -181,7 +180,7 @@ public class BookingController {
         List<SummaryBookCountWithClassification> stats = bookingService
                 .getSummaryClassification(userId, startDate, endDate);
 
-        return ResponseUtil.headersMaker(timeStart, stats);
+        return HeadersMaker.make(timeStart, stats);
     }
 
 }

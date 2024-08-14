@@ -1,11 +1,232 @@
 package ru.dmt100.flight_booking.sql;
 
-import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 public class SqlQuery {
+
+
+    public String getDROP_BOARDING_PASSES_FLIGHT_ID_SEAT_NO_UNIQUE() {
+        return DROP_BOARDING_PASSES_FLIGHT_ID_SEAT_NO_UNIQUE;
+    }
+
+    public String getADD_BOARDING_PASSES_UNIQUE_CONSTRAINT() {
+        return ADD_BOARDING_PASSES_UNIQUE_CONSTRAINT;
+    }
+
+    public String getDROP_TICKETS_BOOK_REF_FKEY() {
+        return DROP_TICKETS_BOOK_REF_FKEY;
+    }
+
+    public String getADD_TICKETS_BOOK_REF_FKEY() {
+        return ADD_TICKETS_BOOK_REF_FKEY;
+    }
+
+    public String getDROP_TICKET_FLIGHTS_TICKET_NO_FKEY() {
+        return DROP_TICKET_FLIGHTS_TICKET_NO_FKEY;
+    }
+
+    public String getADD_TICKET_FLIGHTS_TICKET_NO_FKEY() {
+        return ADD_TICKET_FLIGHTS_TICKET_NO_FKEY;
+    }
+
+    public String getDROP_BOARDING_PASSES_TICKET_NO_FKEY() {
+        return DROP_BOARDING_PASSES_TICKET_NO_FKEY;
+    }
+
+    public String getADD_BOARDING_PASSES_TICKET_NO_FKEY() {
+        return ADD_BOARDING_PASSES_TICKET_NO_FKEY;
+    }
+
+    public String getCHECKING_BOARDING_PASS() {
+        return CHECKING_BOARDING_PASS;
+    }
+
+    public String getCHECKING_BOARDING_PASS_NO() {
+        return CHECKING_BOARDING_PASS_NO;
+    }
+
+
+    public String getCHECKING_FLIGHT_ID() {
+        return CHECKING_FLIGHT_ID;
+    }
+
+    public String getCHECKING_TICKET_NO() {
+        return CHECKING_TICKET_NO;
+    }
+
+    public String getTICKET_NO_FLIGHT_ID_FROM_BOARDING_PASSES() {
+        return TICKET_NO_FLIGHT_ID_FROM_BOARDING_PASSES;
+    }
+
+    public String getNEW_BOARDING_PASS() {
+        return NEW_BOARDING_PASS;
+    }
+
+    public String getALL_BOARDING_PASSES() {
+        return ALL_BOARDING_PASSES;
+    }
+
+    public String getBOARDING_PASSES_BY_TICKET_NO() {
+        return BOARDING_PASSES_BY_TICKET_NO;
+    }
+
+    public String getUPDATE_BOARDING_PASS() {
+        return UPDATE_BOARDING_PASS;
+    }
+
+    public String getUPDATE_BOARDING_PASS_SEAT() {
+        return UPDATE_BOARDING_PASS_SEAT;
+    }
+
+    public String getDELETE_BOARDING_PASS() {
+        return DELETE_BOARDING_PASS;
+    }
+
+    // BOOKINGS
+    public String getCHECKING_BOOK_REF() {
+        return CHECKING_BOOK_REF;
+    }
+
+    public String getNEW_BOOKING() {
+        return NEW_BOOKING;
+    }
+
+    public String getBOOKING_BY_BOOK_REF() {
+        return BOOKING_BY_BOOK_REF;
+    }
+
+    public String getPASSENGERS_INFO_BY_BOOK_REF() {
+        return PASSENGERS_INFO_BY_BOOK_REF;
+    }
+
+    public String getPASSENGERS_INFO_BY_FLIGHT_ID() {
+        return PASSENGERS_INFO_BY_FLIGHT_ID;
+    }
+
+    public String getBOOKINGS_BY_FLIGHT_ID() {
+        return BOOKINGS_BY_FLIGHT_ID;
+    }
+
+    public String getALL_BOOKINGS() {
+        return ALL_BOOKINGS;
+    }
+
+    public String getUPDATE_BOOKING() {
+        return UPDATE_BOOKING;
+    }
+
+    public String getDELETE_BOARDING_PASSES_BY_BOOK_REF() {
+        return DELETE_BOARDING_PASSES_BY_BOOK_REF;
+    }
+
+    public String getDELETE_TICKETS_BY_BOOK_REF() {
+        return DELETE_TICKETS_BY_BOOK_REF;
+    }
+
+    public String getDELETE_BOOKING_BY_BOOK_REF() {
+        return DELETE_BOOKING_BY_BOOK_REF;
+    }
+
+    public String getSTAT_BOOKING_AMOUNT_BY_DATE() {
+        return STAT_BOOKING_AMOUNT_BY_DATE;
+    }
+
+    public String getSTAT_BOOKING_AMOUNT_SUMMARY_BY_WEEK() {
+        return STAT_BOOKING_AMOUNT_SUMMARY_BY_WEEK;
+    }
+
+    public String getSTAT_TOTAL_SPENT_BY_PASSENGER() {
+        return STAT_TOTAL_SPENT_BY_PASSENGER;
+    }
+
+    public String getSTAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS() {
+        return STAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS;
+    }
+
+    public String getSTAT_CLASSIFICATION_BY_BOOKINGS() {
+        return STAT_CLASSIFICATION_BY_BOOKINGS;
+    }
+
+    public String getALL_FLIGHTS() {
+        return ALL_FLIGHTS;
+    }
+
+    public String getFLIGHT_BY_FLIGHT_ID() {
+        return FLIGHT_BY_FLIGHT_ID;
+    }
+
+    public String getNEW_FLIGHT() {
+        return NEW_FLIGHT;
+    }
+
+    public String getALL_TICKETS_ID_BY_FLIGHT_ID() {
+        return ALL_TICKETS_ID_BY_FLIGHT_ID;
+    }
+
+    public String getSTAT_FLIGHT_COUNT_BY_STATUS() {
+        return STAT_FLIGHT_COUNT_BY_STATUS;
+    }
+
+    public String getSTAT_FLIGHT_COUNT_BY_MONTH() {
+        return STAT_FLIGHT_COUNT_BY_MONTH;
+    }
+
+    public String getSTAT_DELAYED_FLIGHTS_WITH_PASSENGERS() {
+        return STAT_DELAYED_FLIGHTS_WITH_PASSENGERS;
+    }
+
+    public String getSTAT_FLIGHTS_DELAYED_MORE_THAN_TWO_HOURS() {
+        return STAT_FLIGHTS_DELAYED_MORE_THAN_TWO_HOURS;
+    }
+
+    public String getSTAT_MOST_POPULAR_ROUTES() {
+        return STAT_MOST_POPULAR_ROUTES;
+    }
+
+    public String getSTAT_AVG_DELAY_BY_DAY_OF_WEEK() {
+        return STAT_AVG_DELAY_BY_DAY_OF_WEEK;
+    }
+
+    public String getNEW_TICKET() {
+        return NEW_TICKET;
+    }
+
+    public String getALL_TICKETS() {
+        return ALL_TICKETS;
+    }
+
+    public String getALL_TICKETS_WITH_LIMIT() {
+        return ALL_TICKETS_WITH_LIMIT;
+    }
+
+    public String getTICKETS_BY_BOOK_REF() {
+        return TICKETS_BY_BOOK_REF;
+    }
+
+    public String getTICKET_BY_TICKET_NO() {
+        return TICKET_BY_TICKET_NO;
+    }
+
+    public String getUPDATE_TICKET() {
+        return UPDATE_TICKET;
+    }
+
+    public String getDELETE_TICKET() {
+        return DELETE_TICKET;
+    }
+
+    public String getCOUNT_TICKETS_ON_SCHEDULED_FLIGHTS_BY_TIME_RANGE() {
+        return COUNT_TICKETS_ON_SCHEDULED_FLIGHTS_BY_TIME_RANGE;
+    }
+
+    public String getAIRPORT_BY_CODE() {
+        return AIRPORT_BY_CODE;
+    }
+
+    public String getAIRCRAFT_BY_CODE() {
+        return AIRCRAFT_BY_CODE;
+    }
 
     // drops the unique constraint on flight_id and seat_no in boarding_passes table
     private final String DROP_BOARDING_PASSES_FLIGHT_ID_SEAT_NO_UNIQUE = """
@@ -65,37 +286,38 @@ public class SqlQuery {
                 on delete cascade;
             """;
 
+//=========================================================================================================
+
+
     // Validation
     // SQL query for checking the existence of a boarding pass with a composite key
     private final String CHECKING_BOARDING_PASS = """
-            select 1 from boarding_passes 
+            select 1 
+            from boarding_passes 
             where ticket_no = ? and flight_id = ?;
             """;
 
     // checks if a boarding pass with a specific ticket number exists in the boarding_passes table.
     private final String CHECKING_BOARDING_PASS_NO = """
-            select boarding_no from boarding_passes 
+            select boarding_no 
+            from boarding_passes 
             where ticket_no = ?
             """;
 
-    // checks if a booking with a specific book_ref exists in the bookings table.
-    private final String CHECKING_BOOK_REF = """
-            select book_ref from bookings
-            where book_ref = ?
-            """;
 
     // Check flight by ID
     private final String CHECKING_FLIGHT_ID = """
-            select flight_id from flights where flight_id = ?
+            select flight_id 
+            from flights 
+            where flight_id = ?
             """;
 
-    // checks if a ticket exists
-    private final String CHECKING_TICKET_NO = """
-            select ticket_no from tickets where ticket_no = ?
-            """;
-
-    // BOARDING_PASS (Dao)
+    // ==================================================================================== BOARDING_PASS
     // creates a new boarding pass
+    private final String TICKET_NO_FLIGHT_ID_FROM_BOARDING_PASSES = """
+            select ticket_no, flight_id from boarding_passes bp
+            where ticket_no = ?
+            """;
     private final String NEW_BOARDING_PASS = """
             insert into boarding_passes (ticket_no, flight_id, boarding_no, seat_no)
             values (?, ?, ?, ?)
@@ -109,7 +331,7 @@ public class SqlQuery {
             """;
 
     // selects a boarding pass by ticket number
-    private final String BOARDING_PASS_BY_BOARDING_NO = """
+    private final String BOARDING_PASSES_BY_TICKET_NO = """
             select ticket_no, flight_id, boarding_no, seat_no from boarding_passes
             where ticket_no = ?
             """;
@@ -129,11 +351,17 @@ public class SqlQuery {
 
     // deletes a boarding pass by ticket number
     private final String DELETE_BOARDING_PASS = """
-            delete from boarding_passes where ticket_no = ?
+            delete from boarding_passes where ticket_no = ? and flight_id = ?
             """;
 
+    // ==================================================================================== BOOKINGS
+    // checks if a booking with a specific book_ref exists in the bookings table.
+    private final String CHECKING_BOOK_REF = """
+            select book_ref 
+            from bookings
+            where book_ref = ?
+            """;
 
-    // BOOKINGS (Dao)
     // creates a new booking
     private final String NEW_BOOKING = """
             insert into bookings (book_ref, book_date, total_amount)
@@ -146,22 +374,6 @@ public class SqlQuery {
             from bookings b
             where b.book_ref = ?
             """;
-
-    // passenger information by book_ref
-    private final String PASSENGERS_INFO_BY_BOOK_REF = """
-            select t.ticket_no, t.passenger_id, t.passenger_name, t.contact_data
-            from tickets t
-            join bookings b on t.book_ref = b.book_ref
-            where t.book_ref = ?""";
-
-    // passenger information by flight ID.
-    private final String PASSENGERS_INFO_BY_FLIGHT_ID = """
-            select t.ticket_no, t.book_ref, t.passenger_id, t.passenger_name, t.contact_data
-            from tickets t
-            join ticket_flights tf on t.ticket_no = tf.ticket_no
-            join flights f on tf.flight_id = f.flight_id
-            where tf.flight_id = ?
-            order by t.ticket_no""";
 
     // all bookings by flight ID.
     private final String BOOKINGS_BY_FLIGHT_ID = """
@@ -185,25 +397,11 @@ public class SqlQuery {
             where book_ref = ?
             """;
 
-    // deletes all boarding passes bybook_ref.
-    private final String DELETE_BOARDING_PASSES_BY_BOOK_REF = """
-            delete from boarding_passes
-            where ticket_no in (
-                select ticket_no
-                from tickets
-                where book_ref = ?
-            );
-            """;
-
-    // deletes all tickets by book_ref.
-    private final String DELETE_TICKETS_BY_BOOK_REF = """
-            delete from tickets
-            where book_ref = ?;
-            """;
 
     // deletes by book_ref.
     private final String DELETE_BOOKING_BY_BOOK_REF = """
-            delete from bookings
+            delete 
+            from bookings
             where book_ref = ?;
             """;
 
@@ -233,18 +431,6 @@ public class SqlQuery {
             order by total_revenue desc;
             """;
 
-    // 3. Total amount spent by each passenger
-    private final String STAT_TOTAL_SPENT_BY_PASSENGER = """
-            select
-                t.passenger_id,
-                t.passenger_name,
-                sum(tf.amount) as total_spent
-            from tickets t
-            join ticket_flights tf on t.ticket_no = tf.ticket_no
-            group by t.passenger_id, t.passenger_name
-            order by total_spent desc
-            limit ?
-            """;
 
     // 4. Number of bookings and total revenue for each flight, including flight information.
     private final String STAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS = """
@@ -284,7 +470,7 @@ public class SqlQuery {
             order by book_count desc;
             """;
 
-    // FLIGHTS
+    // ==================================================================================== FLIGHTS
     // Select all flights
     private final String ALL_FLIGHTS = """
             select
@@ -322,7 +508,6 @@ public class SqlQuery {
                 actual_arrival)
             values (nextval('flight_id_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
-
 
     // Flight service
     private final String ALL_TICKETS_ID_BY_FLIGHT_ID = """
@@ -389,7 +574,30 @@ public class SqlQuery {
             """;
 
 
-    // TICKETS
+    // Select airport by code
+    private final String AIRPORT_BY_CODE = """
+            select
+                airport_code,
+                airport_name ->> 'en' as airport_name,
+                city ->> 'en' as city,
+                coordinates,
+                timezone
+            from airports_data
+            where airport_code = ?;
+            """;
+
+    // Select aircraft by code
+    private final String AIRCRAFT_BY_CODE = """
+            select
+                aircraft_code,
+                model ->> 'en' as model,
+                range
+            from demo.bookings.aircrafts_data
+            where aircraft_code = ?;
+            """;
+
+
+    // ==================================================================================== TICKETS
     // creates a new ticket
     private final String NEW_TICKET = """
             insert into tickets (
@@ -446,6 +654,43 @@ public class SqlQuery {
             delete from tickets where ticket_no = ?
             """;
 
+    // checks if a ticket exists
+    private final String CHECKING_TICKET_NO = """
+            select ticket_no from tickets where ticket_no = ?
+            """;
+
+
+    // deletes all tickets by book_ref.
+    private final String DELETE_TICKETS_BY_BOOK_REF = """
+            delete from tickets
+            where book_ref = ?;
+            """;
+    // passenger information by book_ref
+    private final String PASSENGERS_INFO_BY_BOOK_REF = """
+            select t.ticket_no, t.passenger_id, t.passenger_name, t.contact_data
+            from tickets t
+            join bookings b on t.book_ref = b.book_ref
+            where t.book_ref = ?""";
+
+    // passenger information by flight ID.
+    private final String PASSENGERS_INFO_BY_FLIGHT_ID = """
+            select t.ticket_no, t.book_ref, t.passenger_id, t.passenger_name, t.contact_data
+            from tickets t
+            join ticket_flights tf on t.ticket_no = tf.ticket_no
+            join flights f on tf.flight_id = f.flight_id
+            where tf.flight_id = ?
+            order by t.ticket_no""";
+
+    // deletes all boarding passes bybook_ref.
+    private final String DELETE_BOARDING_PASSES_BY_BOOK_REF = """
+            delete from boarding_passes
+            where ticket_no in (
+                select ticket_no
+                from tickets
+                where book_ref = ?
+            );
+            """;
+
     // Ticket statistics
     // Counts tickets on scheduled flights by time range
     private final String COUNT_TICKETS_ON_SCHEDULED_FLIGHTS_BY_TIME_RANGE = """
@@ -471,25 +716,16 @@ public class SqlQuery {
                 f.status
             """;
 
-    // Select airport by code
-    private final String AIRPORT_BY_CODE = """
+    // 3. Total amount spent by each passenger
+    private final String STAT_TOTAL_SPENT_BY_PASSENGER = """
             select
-                airport_code,
-                airport_name ->> 'en' as airport_name,
-                city ->> 'en' as city,
-                coordinates,
-                timezone
-            from airports_data
-            where airport_code = ?;
-            """;
-
-    // Select aircraft by code
-    private final String AIRCRAFT_BY_CODE = """
-            select
-                aircraft_code,
-                model ->> 'en' as model,
-                range
-            from demo.bookings.aircrafts_data
-            where aircraft_code = ?;
+                t.passenger_id,
+                t.passenger_name,
+                sum(tf.amount) as total_spent
+            from tickets t
+            join ticket_flights tf on t.ticket_no = tf.ticket_no
+            group by t.passenger_id, t.passenger_name
+            order by total_spent desc
+            limit ?
             """;
 }

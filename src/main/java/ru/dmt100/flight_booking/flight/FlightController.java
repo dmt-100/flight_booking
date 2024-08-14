@@ -10,7 +10,7 @@ import ru.dmt100.flight_booking.flight.dto.FlightDto;
 import ru.dmt100.flight_booking.flight.dto.record.*;
 import ru.dmt100.flight_booking.flight.model.Flight;
 import ru.dmt100.flight_booking.flight.service.FlightService;
-import ru.dmt100.flight_booking.util.ResponseUtil;
+import ru.dmt100.flight_booking.util.HeadersMaker;
 
 import java.util.List;
 import java.util.Map;
@@ -36,8 +36,7 @@ public class FlightController {
             @RequestBody Flight flight) {
         double timeStart = System.currentTimeMillis();
 
-        Optional<FlightDto> flightDtoResponse =
-                (Optional<FlightDto>) flightDao.save(userId, flight);
+        Optional<FlightDto> flightDtoResponse = (Optional<FlightDto>) flightDao.save(userId, flight);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -78,7 +77,7 @@ public class FlightController {
         return ResponseEntity.ok().headers(headers).body(flightDtoResponse);
     }
 
-    @DeleteMapping("/{ticketNo}")
+    @DeleteMapping("/{flightId}")
     public ResponseEntity<?> delete(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @PathVariable Long flightId) {
@@ -175,7 +174,7 @@ public class FlightController {
 
         List<AvgDelayByDayOfWeek> stats = flightService.getAvgDelayByDayOfWeek();
 
-        return ResponseUtil.headersMaker(timeStart, stats);
+        return HeadersMaker.make(timeStart, stats);
     }
     private ResponseEntity headersMaker(double timeStart, List<?> list) {
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;

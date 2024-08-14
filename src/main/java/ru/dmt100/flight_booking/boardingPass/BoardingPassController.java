@@ -7,9 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.dmt100.flight_booking.boardingPass.model.BoardingPass;
 import ru.dmt100.flight_booking.boardingPass.model.dto.BoardingPassDto;
+import ru.dmt100.flight_booking.boardingPass.service.BoardingPassService;
 import ru.dmt100.flight_booking.dao.Dao;
-import ru.dmt100.flight_booking.util.ResponseUtil;
+import ru.dmt100.flight_booking.util.HeadersMaker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,17 +23,13 @@ import static ru.dmt100.flight_booking.constant.Constant.X_PROCESSING_TIME;
 @RequestMapping("/boarding-pass")
 public class BoardingPassController {
     private final Dao boardingPassDao;
+    private final BoardingPassService boardingPassService;
 
-    public BoardingPassController(@Qualifier("boardingPassDaoImpl")Dao boardingPassDao) {
+    public BoardingPassController(@Qualifier("boardingPassDaoImpl") Dao boardingPassDao,
+                                  @Qualifier("boardingPassServiceImpl") BoardingPassService boardingPassService) {
         this.boardingPassDao = boardingPassDao;
+        this.boardingPassService = boardingPassService;
     }
-//    private final BoardingPassService boardingPassService;
-
-//    public BoardingPassController(@Qualifier("boardingPassDaoImpl") Dao boardingPassDao,
-//                                  @Qualifier("boardingPassServiceImpl") BoardingPassService boardingPassService) {
-//        this.boardingPassDao = boardingPassDao;
-//        this.boardingPassService = boardingPassService;
-//    }
 
 
     @PostMapping
@@ -73,7 +71,7 @@ public class BoardingPassController {
 
         List<BoardingPass> boardingPasses = boardingPassDao.findAll(userId, limit);
 
-        return ResponseUtil.headersMaker(timeStart, boardingPasses);
+        return HeadersMaker.make(timeStart, boardingPasses);
     }
 
     @PatchMapping()
@@ -91,13 +89,18 @@ public class BoardingPassController {
         return ResponseEntity.ok().headers(headers).body(updatedBoardingPass);
     }
 
-    @DeleteMapping("/{ticketNo}")
+    @DeleteMapping("/{ticketNo}/{flightId}")
     public ResponseEntity<?> delete(
             @RequestHeader(value = USER_ID, required = false) Long userId,
-            @PathVariable String ticketNo) {
+            @PathVariable String ticketNo,
+            @PathVariable Long flightId) {
         double timeStart = System.currentTimeMillis();
 
-        boolean isBoardingPassDeleted = boardingPassDao.delete(userId, ticketNo);
+        var sb = new StringBuilder();
+        sb.append(ticketNo).append("_").append(flightId);
+        String compositeKey = sb.toString();
+
+        boolean isBoardingPassDeleted = boardingPassDao.delete(userId, compositeKey);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -109,11 +112,20 @@ public class BoardingPassController {
     @DeleteMapping("/boarding-passes-delete")
     public ResponseEntity<?> deleteListOfBoardingPasses(
             @RequestHeader(value = USER_ID, required = false) Long userId,
-            @RequestBody Map<String, List<String>> boardingPassDeleteRequest) {
+            @RequestBody Map<String, Object> requestPayload) {
         double timeStart = System.currentTimeMillis();
 
-        boolean areBoardingPassesDeleted = boardingPassDao.deleteList(userId,
-                boardingPassDeleteRequest.get("ticketNosList"));
+        List<String> compositeKeys = new ArrayList<>();
+        List<Object> keys = (List<Object>) requestPayload.get("compositeKeys");
+
+        for (int i = 0; i < keys.size(); i += 2) {
+            String ticketNo = (String) keys.get(i);
+            Long flightId = Long.valueOf(keys.get(i + 1).toString());
+
+            compositeKeys.add(ticketNo + "_" + flightId);
+        }
+
+        boolean areBoardingPassesDeleted = boardingPassDao.deleteList(userId, compositeKeys);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
@@ -121,4 +133,8 @@ public class BoardingPassController {
 
         return ResponseEntity.ok().headers(headers).body("Are boarding passes deleted: " + areBoardingPassesDeleted);
     }
+
+    //Service
+
+
 }

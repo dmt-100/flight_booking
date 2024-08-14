@@ -1,4 +1,4 @@
-package ru.dmt100.flight_booking.enums;
+package ru.dmt100.flight_booking.airport.enums;
 
 public enum AirportCode {
     AAQ,

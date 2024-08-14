@@ -1,6 +1,6 @@
 package ru.dmt100.flight_booking.ticket.dto.record;
 
-import ru.dmt100.flight_booking.enums.Status;
+import ru.dmt100.flight_booking.airport.enums.Status;
 
 import java.time.LocalDateTime;
 

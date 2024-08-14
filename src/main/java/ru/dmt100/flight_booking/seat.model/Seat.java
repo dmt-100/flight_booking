@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.aircraft.model.Aircraft;
-import ru.dmt100.flight_booking.enums.FareConditions;
+import ru.dmt100.flight_booking.airport.enums.FareConditions;
 
 @Entity
 @Table(name = "seats")

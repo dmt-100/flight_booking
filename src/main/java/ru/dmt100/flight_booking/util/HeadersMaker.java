@@ -5,9 +5,9 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-public class ResponseUtil {
+public class HeadersMaker {
 
-    public static ResponseEntity<?> headersMaker(double timeStart, List<?> list) {
+    public static ResponseEntity<?> make(double timeStart, List<?> list) {
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-Processing-Time", qTime + " sec.");

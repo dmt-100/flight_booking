@@ -11,7 +11,7 @@ import ru.dmt100.flight_booking.ticket.dto.record.PassengersInfoByFlightId;
 import ru.dmt100.flight_booking.ticket.dto.record.TicketOnScheduledFlightsByTimeRange;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
 import ru.dmt100.flight_booking.ticket.service.TicketService;
-import ru.dmt100.flight_booking.util.ResponseUtil;
+import ru.dmt100.flight_booking.util.HeadersMaker;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,7 +72,7 @@ public class TicketController {
 
         List<TicketLiteDtoResponse> tickets = ticketDao.findAll(userId, limit);
 
-        return ResponseUtil.headersMaker(timeStart, tickets);
+        return HeadersMaker.make(timeStart, tickets);
     }
 
     @PatchMapping()
@@ -135,7 +135,7 @@ public class TicketController {
                 ticketService.findPassengersInfoByListOfTicketNos(userId,
                         passengerTicketNo.get("passengerTicketNo"));
 
-        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+        return HeadersMaker.make(timeStart, passengerInfos);
     }
 
     @GetMapping("/passengerInfo/{flightId}")
@@ -147,7 +147,7 @@ public class TicketController {
         List<PassengersInfoByFlightId> passengerInfos =
                 ticketService.findPassengersInfoByFlightId(userId, flightId);
 
-        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+        return HeadersMaker.make(timeStart, passengerInfos);
     }
 
     @GetMapping("/countTickets")
@@ -160,6 +160,6 @@ public class TicketController {
         List<TicketOnScheduledFlightsByTimeRange> passengerInfos =
                 ticketService.getCountTicketsOnScheduledFlightsByTimeRange(userId, startDate, endDate);
 
-        return ResponseUtil.headersMaker(timeStart, passengerInfos);
+        return HeadersMaker.make(timeStart, passengerInfos);
     }
 }

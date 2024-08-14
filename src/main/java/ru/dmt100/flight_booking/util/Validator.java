@@ -1,7 +1,6 @@
 package ru.dmt100.flight_booking.util;
 
 import lombok.AllArgsConstructor;
-import ru.dmt100.flight_booking.boardingPass.model.BoardingPass;
 import ru.dmt100.flight_booking.sql.SqlQuery;
 
 import java.sql.Connection;
@@ -12,11 +11,11 @@ public class Validator {
 
     private final SqlQuery sqlQuery;
 
-    public boolean checkBoardingPass(Connection con, BoardingPass bp) {
+    public boolean checkBoardingPass(Connection con, String ticketNo, Long flightId) {
 
         try (var stmt = con.prepareStatement(sqlQuery.getCHECKING_BOARDING_PASS())) {
-            stmt.setString(1, bp.getTicketNo());
-            stmt.setLong(2, bp.getFlightId());
+            stmt.setString(1, ticketNo);
+            stmt.setLong(2, flightId);
             try (var rs = stmt.executeQuery()) {
                 return rs.next();
             }

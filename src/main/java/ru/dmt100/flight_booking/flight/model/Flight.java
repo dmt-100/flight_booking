@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.aircraft.model.Aircraft;
 import ru.dmt100.flight_booking.airport.model.Airport;
-import ru.dmt100.flight_booking.enums.Status;
+import ru.dmt100.flight_booking.airport.enums.Status;
 import ru.dmt100.flight_booking.ticketFlight.model.TicketFlight;
 
 import java.time.ZonedDateTime;
