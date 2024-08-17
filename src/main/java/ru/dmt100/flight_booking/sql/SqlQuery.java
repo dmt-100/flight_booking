@@ -67,8 +67,8 @@ public class SqlQuery {
         return ALL_BOARDING_PASSES;
     }
 
-    public String getBOARDING_PASSES_BY_TICKET_NO() {
-        return BOARDING_PASSES_BY_TICKET_NO;
+    public String getBOARDING_PASS_BY_BOARDING_NO() {
+        return BOARDING_PASS_BY_BOARDING_NO;
     }
 
     public String getUPDATE_BOARDING_PASS() {
@@ -83,18 +83,7 @@ public class SqlQuery {
         return DELETE_BOARDING_PASS;
     }
 
-    // BOOKINGS
-    public String getCHECKING_BOOK_REF() {
-        return CHECKING_BOOK_REF;
-    }
 
-    public String getNEW_BOOKING() {
-        return NEW_BOOKING;
-    }
-
-    public String getBOOKING_BY_BOOK_REF() {
-        return BOOKING_BY_BOOK_REF;
-    }
 
     public String getPASSENGERS_INFO_BY_BOOK_REF() {
         return PASSENGERS_INFO_BY_BOOK_REF;
@@ -104,17 +93,6 @@ public class SqlQuery {
         return PASSENGERS_INFO_BY_FLIGHT_ID;
     }
 
-    public String getBOOKINGS_BY_FLIGHT_ID() {
-        return BOOKINGS_BY_FLIGHT_ID;
-    }
-
-    public String getALL_BOOKINGS() {
-        return ALL_BOOKINGS;
-    }
-
-    public String getUPDATE_BOOKING() {
-        return UPDATE_BOOKING;
-    }
 
     public String getDELETE_BOARDING_PASSES_BY_BOOK_REF() {
         return DELETE_BOARDING_PASSES_BY_BOOK_REF;
@@ -124,29 +102,13 @@ public class SqlQuery {
         return DELETE_TICKETS_BY_BOOK_REF;
     }
 
-    public String getDELETE_BOOKING_BY_BOOK_REF() {
-        return DELETE_BOOKING_BY_BOOK_REF;
-    }
 
-    public String getSTAT_BOOKING_AMOUNT_BY_DATE() {
-        return STAT_BOOKING_AMOUNT_BY_DATE;
-    }
-
-    public String getSTAT_BOOKING_AMOUNT_SUMMARY_BY_WEEK() {
-        return STAT_BOOKING_AMOUNT_SUMMARY_BY_WEEK;
-    }
 
     public String getSTAT_TOTAL_SPENT_BY_PASSENGER() {
         return STAT_TOTAL_SPENT_BY_PASSENGER;
     }
 
-    public String getSTAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS() {
-        return STAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS;
-    }
 
-    public String getSTAT_CLASSIFICATION_BY_BOOKINGS() {
-        return STAT_CLASSIFICATION_BY_BOOKINGS;
-    }
 
     public String getALL_FLIGHTS() {
         return ALL_FLIGHTS;
@@ -331,7 +293,7 @@ public class SqlQuery {
             """;
 
     // selects a boarding pass by ticket number
-    private final String BOARDING_PASSES_BY_TICKET_NO = """
+    private final String BOARDING_PASS_BY_BOARDING_NO = """
             select ticket_no, flight_id, boarding_no, seat_no from boarding_passes
             where ticket_no = ?
             """;
@@ -354,121 +316,7 @@ public class SqlQuery {
             delete from boarding_passes where ticket_no = ? and flight_id = ?
             """;
 
-    // ==================================================================================== BOOKINGS
-    // checks if a booking with a specific book_ref exists in the bookings table.
-    private final String CHECKING_BOOK_REF = """
-            select book_ref 
-            from bookings
-            where book_ref = ?
-            """;
 
-    // creates a new booking
-    private final String NEW_BOOKING = """
-            insert into bookings (book_ref, book_date, total_amount)
-            values (?, ?, ?)
-            """;
-
-    // booking by book_ref.
-    private final String BOOKING_BY_BOOK_REF = """
-            select book_ref, book_date, total_amount
-            from bookings b
-            where b.book_ref = ?
-            """;
-
-    // all bookings by flight ID.
-    private final String BOOKINGS_BY_FLIGHT_ID = """
-            select b.book_ref, b.book_date, b.total_amount
-            from bookings b
-            join tickets t on b.book_ref = t.book_ref
-            join ticket_flights tf on t.ticket_no = tf.ticket_no
-            where tf.flight_id = ?
-            """;
-
-    // all bookings.
-    private final String ALL_BOOKINGS = """
-            select book_ref, book_date, total_amount
-            from bookings;
-            """;
-
-    // updates the booking
-    private final String UPDATE_BOOKING = """
-            update bookings
-            set book_date = ?, total_amount = ?
-            where book_ref = ?
-            """;
-
-
-    // deletes by book_ref.
-    private final String DELETE_BOOKING_BY_BOOK_REF = """
-            delete 
-            from bookings
-            where book_ref = ?;
-            """;
-
-    // Booking service
-    // 1. Booking statistics grouped by date
-    private final String STAT_BOOKING_AMOUNT_BY_DATE = """
-            select
-               date(b.book_date) as booking_date,
-               count(b.book_ref) as total_bookings,
-               sum(b.total_amount) as total_revenue,
-               avg(b.total_amount) as avg_booking_amount
-            from bookings b
-            group by booking_date
-            order by total_revenue desc;
-            """;
-
-    // 2. Booking statistics grouped by week
-    private final String STAT_BOOKING_AMOUNT_SUMMARY_BY_WEEK = """
-            select
-                date_trunc('week', b.book_date) as booking_week,
-                extract(week from b.book_date) as week_of_year,
-                count(b.book_ref) as total_bookings,
-                sum(b.total_amount) as total_revenue,
-                round(avg(b.total_amount)) as avg_booking_amount
-            from bookings b
-            group by booking_week, week_of_year
-            order by total_revenue desc;
-            """;
-
-
-    // 4. Number of bookings and total revenue for each flight, including flight information.
-    private final String STAT_TOTAL_REVENUE_BY_BOOKINGS_BY_AIRPORTS = """
-            select
-                f.flight_no,
-                f.departure_airport,
-                f.arrival_airport,
-                count(b.book_ref) as total_bookings,
-                sum(b.total_amount) as total_revenue
-            from bookings b
-            join tickets t on b.book_ref = t.book_ref
-            join ticket_flights tf on t.ticket_no = tf.ticket_no
-            join flights f on tf.flight_id = f.flight_id
-            group by f.flight_no, f.departure_airport, f.arrival_airport
-            order by total_bookings desc;
-            """;
-
-    // 5. Classification by summary of bookings amount with dates
-    private final String STAT_CLASSIFICATION_BY_BOOKINGS = """
-            select
-               count(book_ref) as book_count,
-               case
-                  when total_amount > 275000 then 'more then 275000'
-                  when total_amount between 200000 and 2750000 then 'from 200000 to 275000'
-                  when total_amount between 150000 and 200000 then 'from 150000 to 200000'
-                  when total_amount between 100000 and 150000 then 'from 100000 to 150000'
-                  when total_amount between 75000 and 100000 then 'from 75000 to 100000'
-                  when total_amount between 50000 and 75000 then 'from 50000 to 75000'
-                  when total_amount between 40000 and 50000 then 'from 40000 to 50000'
-                  when total_amount between 30000 and 40000 then 'from 30000 to 40000'
-                  when total_amount between 20000 and 30000 then 'from 20000 to 30000'
-                  else 'lower 20000'
-               end as cost_category
-            from bookings b
-            where book_date between ? and ?
-            group by cost_category
-            order by book_count desc;
-            """;
 
     // ==================================================================================== FLIGHTS
     // Select all flights

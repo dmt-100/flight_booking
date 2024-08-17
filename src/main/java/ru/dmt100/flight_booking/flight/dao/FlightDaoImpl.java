@@ -21,7 +21,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,7 @@ import java.util.Optional;
 @Service("flightDaoImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class FlightDaoImpl implements Dao<Long, String, Integer, Boolean, Flight, FlightDto> {
+public class FlightDaoImpl implements Dao<Long, String, Integer, Flight, FlightDto> {
     SqlQuery sqlQuery;
 
     @Override
@@ -87,26 +86,31 @@ public class FlightDaoImpl implements Dao<Long, String, Integer, Boolean, Flight
     }
 
     @Override
-    public List<Optional<FlightDto>> findAll(Long userId, Integer limit) {
-        List<Optional<FlightDto>> flights = new ArrayList<>();
-
-        try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getALL_FLIGHTS());
-             var rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                Long flightId = rs.getLong("flight_id");
-                
-                Optional<FlightDto> flightDto;
-
-                flightDto = fetch(con, flightId);
-                flights.add(flightDto);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return flights;
+    public List<FlightDto> findAll(Long aLong, Integer integer) {
+        return null;
     }
+
+//    @Override
+//    public List<Optional<FlightDto>> findAll(Long userId, Integer limit) {
+//        List<Optional<FlightDto>> flights = new ArrayList<>();
+//
+//        try (var con = ConnectionManager.open();
+//             var stmt = con.prepareStatement(sqlQuery.getALL_FLIGHTS());
+//             var rs = stmt.executeQuery()) {
+//
+//            while (rs.next()) {
+//                Long flightId = rs.getLong("flight_id");
+//
+//                Optional<FlightDto> flightDto;
+//
+//                flightDto = fetch(con, flightId);
+//                flights.add(flightDto);
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return flights;
+//    }
 
     @Override
     public Optional<FlightDto> update(Long aLong, Flight flight) {

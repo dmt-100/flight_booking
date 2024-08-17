@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 import ru.dmt100.flight_booking.ticket.model.Ticket;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -25,7 +25,7 @@ public class Booking {
     String bookRef;
 
     @Column(name = "book_date", nullable = false)
-    ZonedDateTime bookDate;
+    LocalDateTime bookDate;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     BigDecimal totalAmount;

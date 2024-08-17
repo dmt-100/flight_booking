@@ -7,14 +7,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.dmt100.flight_booking.boardingPass.model.BoardingPass;
 import ru.dmt100.flight_booking.boardingPass.model.dto.BoardingPassDto;
 import ru.dmt100.flight_booking.dao.Dao;
-import ru.dmt100.flight_booking.exception.*;
+import ru.dmt100.flight_booking.exception.DeleteException;
+import ru.dmt100.flight_booking.exception.NotFoundException;
+import ru.dmt100.flight_booking.exception.SaveException;
+import ru.dmt100.flight_booking.exception.UpdateException;
 import ru.dmt100.flight_booking.sql.SqlQuery;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 import ru.dmt100.flight_booking.util.Validator;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +24,7 @@ import java.util.Optional;
 @Service("boardingPassDaoImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, BoardingPass, BoardingPassDto> {
+public class BoardingPassDaoImpl implements Dao<Long, String, Integer, BoardingPass, BoardingPassDto> {
     private final SqlQuery sqlQuery = new SqlQuery();
     private final Validator validator = new Validator(sqlQuery);
     @Override
@@ -69,24 +71,29 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
     }
 
     @Override
-    public List<Optional<BoardingPassDto>> findAll(Long userId, Integer limit) {
-        List<Optional<BoardingPassDto>> boardingPasses = new ArrayList<>();
-
-        try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getALL_BOARDING_PASSES())) {
-            stmt.setInt(1, limit);
-            var rs = stmt.executeQuery();
-            while (rs.next()) {
-                String ticketNo = rs.getString("ticket_no");
-
-                Optional<BoardingPassDto> boardingPass = fetch(con, ticketNo);
-                boardingPasses.add(boardingPass);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return boardingPasses;
+    public List<BoardingPassDto> findAll(Long aLong, Integer integer) {
+        return null;
     }
+
+//    @Override
+//    public List<Optional<BoardingPassDto>> findAll(Long userId, Integer limit) {
+//        List<Optional<BoardingPassDto>> boardingPasses = new ArrayList<>();
+//
+//        try (var con = ConnectionManager.open();
+//             var stmt = con.prepareStatement(sqlQuery.getALL_BOARDING_PASSES())) {
+//            stmt.setInt(1, limit);
+//            var rs = stmt.executeQuery();
+//            while (rs.next()) {
+//                String ticketNo = rs.getString("ticket_no");
+//
+//                Optional<BoardingPassDto> boardingPass = fetch(con, ticketNo);
+//                boardingPasses.add(boardingPass);
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return boardingPasses;
+//    }
 
     @Override
     public Optional<BoardingPassDto> update(Long userId, BoardingPass boardingPass) {
@@ -203,7 +210,7 @@ public class BoardingPassDaoImpl implements Dao<Long, String, Integer, Boolean, 
 
 
     private Optional<BoardingPassDto> fetch(Connection con, String ticketNo) {
-        try (var stmt = con.prepareStatement(sqlQuery.getBOARDING_PASSES_BY_TICKET_NO())) {
+        try (var stmt = con.prepareStatement(sqlQuery.getBOARDING_PASS_BY_BOARDING_NO())) {
             stmt.setString(1, ticketNo);
             var rs = stmt.executeQuery();
             if (!rs.next()) {

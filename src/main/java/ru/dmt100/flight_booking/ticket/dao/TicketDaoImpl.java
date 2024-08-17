@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 @Service("ticketDaoImpl")
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class TicketDaoImpl implements Dao<Long, String, Integer, Boolean, Ticket, TicketLiteDtoResponse> {
+public class TicketDaoImpl implements Dao<Long, String, Integer, Ticket, TicketLiteDtoResponse> {
     SqlQuery sqlQuery;
 
     @Override
@@ -71,26 +71,31 @@ public class TicketDaoImpl implements Dao<Long, String, Integer, Boolean, Ticket
         return ticketLiteDtoResponse;
     }
 
-    public List<Optional<TicketLiteDtoResponse>> findAll(Long userId, Integer limit) {
-        List<Optional<TicketLiteDtoResponse>> tickets = new ArrayList<>();
-
-        try (var con = ConnectionManager.open();
-             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS_WITH_LIMIT())) {
-           stmt.setInt(1, limit);
-            var rs = stmt.executeQuery();
-            while (rs.next()) {
-                String ticketNo = rs.getString("ticket_no");
-
-                Optional<TicketLiteDtoResponse> ticket;
-
-                ticket = fetch(con, ticketNo);
-                tickets.add(ticket);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return tickets;
+    @Override
+    public List<TicketLiteDtoResponse> findAll(Long aLong, Integer integer) {
+        return null;
     }
+
+//    public List<Optional<TicketLiteDtoResponse>> findAll(Long userId, Integer limit) {
+//        List<Optional<TicketLiteDtoResponse>> tickets = new ArrayList<>();
+//
+//        try (var con = ConnectionManager.open();
+//             var stmt = con.prepareStatement(sqlQuery.getALL_TICKETS_WITH_LIMIT())) {
+//           stmt.setInt(1, limit);
+//            var rs = stmt.executeQuery();
+//            while (rs.next()) {
+//                String ticketNo = rs.getString("ticket_no");
+//
+//                Optional<TicketLiteDtoResponse> ticket;
+//
+//                ticket = fetch(con, ticketNo);
+//                tickets.add(ticket);
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return tickets;
+//    }
 
     @Override
     public Optional<TicketLiteDtoResponse> update(Long userId, Ticket ticket) {
