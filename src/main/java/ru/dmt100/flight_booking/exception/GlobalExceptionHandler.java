@@ -18,6 +18,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(DeleteException.class)
+    public ResponseEntity<?> handleDeleteException(DeleteException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFoundException(NotFoundException ex) {
@@ -27,9 +31,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<?> handleValidationException(ValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Error",
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 
-    @ExceptionHandler(DeleteException.class)
-    public ResponseEntity<?> handleDeleteException(DeleteException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(DuplicateBookingException.class)
+    public ResponseEntity<?> handleDuplicateBookingException(DuplicateBookingException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Duplicate Booking Error",
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }

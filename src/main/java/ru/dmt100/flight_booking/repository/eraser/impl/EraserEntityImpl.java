@@ -1,27 +1,26 @@
 package ru.dmt100.flight_booking.repository.eraser.impl;
 
 import ru.dmt100.flight_booking.repository.eraser.EraserEntity;
-import ru.dmt100.flight_booking.sql.provider.SqlQueryProvider;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public abstract class EraserEntityImpl<K> implements EraserEntity<K> {
+    private final String query;
 
-    private final SqlQueryProvider sqlQueryProvider;
-    private final String queryType;
-
-    protected EraserEntityImpl(SqlQueryProvider sqlQueryProvider, String queryType) {
-        this.sqlQueryProvider = sqlQueryProvider;
-        this.queryType = queryType;
+    protected EraserEntityImpl(String query) {
+        this.query = query;
     }
-
 
     @Override
     public void delete(Connection con, K key) {
-        try (var stmt = con.prepareStatement(queryType)) {
-            stmt.setObject(1, key);
-            stmt.executeUpdate();
+        try (var stmtDelete = con.prepareStatement(query)) {
+            stmtDelete.setObject(1, key);
+            int deleted = stmtDelete.executeUpdate();
+
+            if (deleted == 0) {
+                throw new RuntimeException("Object not found or not deleted");
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

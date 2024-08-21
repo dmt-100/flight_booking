@@ -3,17 +3,17 @@ package ru.dmt100.flight_booking.dao;
 import java.util.List;
 import java.util.Optional;
 
-public interface Dao<U, K, I, T1, T2> {
-    Optional<T2> save(U u, T1 t1);
+public interface Dao<Long, Integer, K, T, TDto, TResponse> {
+    Optional<TResponse> save(Long userId, TDto tDto);
 
-    Optional<T2> find(U u, K k);
+    Optional<TResponse> find(Long userId, K key);
 
-    List<T2> findAll(U u, I i);
+    List<TDto> findAll(Long userId, Integer limit);
 
-    Optional<T2> update(U u, T1 t1);
+    Optional<TResponse> update(Long userId, TDto tDto);
 
-    boolean delete(U u, K k);
+    boolean delete(Long userId, K key);
 
-    boolean deleteList(U u, List<K> k);
+    boolean deleteList(Long userId, List<K> key);
 
 }

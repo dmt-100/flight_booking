@@ -6,5 +6,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public interface Loader<T> {
-    Optional<T> map(Connection con, ResultSet rs) throws SQLException;
+    Optional<T> getOptional(Connection con, ResultSet rs) throws SQLException;
+    T get(Connection con, ResultSet rs) throws SQLException;
 }

@@ -2,26 +2,26 @@ package ru.dmt100.flight_booking.statistic.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.dmt100.flight_booking.booking.model.stats.*;
-import ru.dmt100.flight_booking.statistic.sql.StatisticSql;
+import ru.dmt100.flight_booking.entity.booking.model.stats.*;
+import ru.dmt100.flight_booking.statistic.sql.StatisticSqlQuery;
 import ru.dmt100.flight_booking.util.ConnectionManager;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.TextStyle;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 @Service("statisticImpl")
 public class StatisticImpl implements Statistic {
-    private final StatisticSql sqlQuery;
+    private final StatisticSqlQuery sqlQuery;
 //    private final StatisticFetcherImpl bookingFetcher;
 
 
-    public StatisticImpl(@Qualifier("statSql") StatisticSql sqlQuery) {
+    public StatisticImpl(@Qualifier("statisticSql") StatisticSqlQuery sqlQuery) {
         this.sqlQuery = sqlQuery;
     }
 
@@ -35,7 +35,8 @@ public class StatisticImpl implements Statistic {
             var rs = stmt.executeQuery();
             while (rs.next()) {
                 LocalDate date = rs.getTimestamp("booking_date").toLocalDateTime().toLocalDate();
-                String month = date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH);
+                String month = date.format(formatter);
                 Long totalBookings = rs.getLong("total_bookings");
                 Long totalRevenue = rs.getLong("total_revenue");
                 Long avgBookingAmount = rs.getLong("avg_booking_amount");

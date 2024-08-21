@@ -8,7 +8,9 @@ plugins {
 }
 
 compileJava {
-    options.compilerArgs << '-parameters'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+    options.compilerArgs << '--enable-preview'
 }
 
 

@@ -1,6 +1,7 @@
 package ru.dmt100.flight_booking.statistic.service;
 
-import ru.dmt100.flight_booking.booking.model.stats.*;
+import ru.dmt100.flight_booking.entity.booking.model.stats.*;
+
 import java.time.LocalDate;
 import java.util.List;
 

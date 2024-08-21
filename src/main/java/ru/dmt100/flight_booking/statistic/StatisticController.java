@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.dmt100.flight_booking.booking.model.stats.*;
+import ru.dmt100.flight_booking.entity.booking.model.stats.*;
 import ru.dmt100.flight_booking.statistic.service.Statistic;
 import ru.dmt100.flight_booking.util.HeadersMaker;
 
