@@ -13,7 +13,9 @@ import ru.dmt100.flight_booking.entity.booking.model.dto.BookingDtoResponse;
 import ru.dmt100.flight_booking.entity.booking.service.BookingService;
 import ru.dmt100.flight_booking.util.HeadersMaker;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static ru.dmt100.flight_booking.constant.Constant.USER_ID;
@@ -27,7 +29,7 @@ public class BookingController {
 
     @Autowired
     public BookingController(
-            @Qualifier("bookingDaoIml") Dao dao,
+            @Qualifier("bookingDaoImpl") Dao dao,
             @Qualifier("bookingServiceImpl") BookingService bookingService) {
         this.dao = dao;
         this.bookingService = bookingService;
@@ -67,12 +69,14 @@ public class BookingController {
 
 
     @GetMapping(params = "limit")
-    public ResponseEntity<?> findAll(
+    public ResponseEntity<?> findAllByDate(
             @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestParam OffsetDateTime startTime,
+            @RequestParam OffsetDateTime endTime,
             @RequestParam Integer limit) {
         double timeStart = System.currentTimeMillis();
 
-        List<Booking> bookings = dao.findAll(userId, limit);
+        List<?> bookings = dao.find(userId, startTime, endTime, limit);
 
         return HeadersMaker.make(timeStart, bookings);
     }
@@ -95,17 +99,34 @@ public class BookingController {
 
     @DeleteMapping()
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> deleteBooking(
+    public ResponseEntity<?> delete(
             @RequestHeader(value = USER_ID, required = false) Long userId,
             @RequestParam String bookRef) {
         double timeStart = System.currentTimeMillis();
-        dao.delete(userId, bookRef);
+
+        boolean isBookingDeleted = dao.delete(userId, bookRef);
 
         double qTime = (System.currentTimeMillis() - timeStart) / 1000;
         HttpHeaders headers = new HttpHeaders();
         headers.add(X_PROCESSING_TIME, qTime + " sec.");
 
-        return ResponseEntity.noContent().headers(headers).build();
+        return ResponseEntity.ok().headers(headers).body("Is booking deleted: " + isBookingDeleted);
+    }
+
+    @DeleteMapping("/deleteList")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<?> deleteList(
+            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestBody List<String> bookRefs) {
+        double timeStart = System.currentTimeMillis();
+        Map<String, Boolean> deletedBookings;
+        deletedBookings = dao.deleteList(userId, bookRefs);
+
+        double qTime = (System.currentTimeMillis() - timeStart) / 1000;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_PROCESSING_TIME, qTime + " sec.");
+
+        return ResponseEntity.ok().headers(headers).body(deletedBookings);
     }
 
     @GetMapping("/flight/{flightId}")

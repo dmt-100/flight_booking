@@ -3,7 +3,7 @@ package ru.dmt100.flight_booking.entity.booking.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.dmt100.flight_booking.entity.booking.model.Booking;
-import ru.dmt100.flight_booking.entity.booking.model.dataaccess.BookingReader;
+import ru.dmt100.flight_booking.entity.booking.crud.BookingReader;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,7 @@
 package ru.dmt100.flight_booking.entity.booking.repository;
 
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.dmt100.flight_booking.entity.booking.model.dto.BookingDtoResponse;
 import ru.dmt100.flight_booking.entity.ticket.model.Ticket;
@@ -20,12 +21,13 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository("bookingMapper")
-public class BookingMapper<T extends BookingDtoResponse> implements Loader<T> {
-//    private final TicketQuery ticketByBookRefQuery;
-//
-//    public BookingWithTicketNosResponseMapper(TicketQuery) {
-//        this.ticketByBookRefQuery = ticketByBookRefQuery;
-//    }
+public class BookingMapper<T, TDto> implements Loader<T, TDto> {
+
+    private final TicketQuery ticketQuery;
+
+    public BookingMapper(@Qualifier("ticketQuery") TicketQuery ticketQuery) {
+        this.ticketQuery = ticketQuery;
+    }
 
     @Override
     public Optional<T> getOptional(Connection con, ResultSet rs) {
@@ -33,18 +35,18 @@ public class BookingMapper<T extends BookingDtoResponse> implements Loader<T> {
     }
 
     @Override
-    public T get(Connection con, ResultSet rs) {
+    public TDto get(Connection con, ResultSet rs) {
         return mapWithoutTicketsNos(con, rs);
     }
 
-    private T mapWithoutTicketsNos(Connection con, ResultSet rs) {
-        T booking;
+    private TDto mapWithoutTicketsNos(Connection con, ResultSet rs) {
+        TDto booking;
         try {
             String bookRef = rs.getString("book_ref");
             ZonedDateTime bookDate = rs.getTimestamp("book_date").toInstant().atZone(ZoneId.systemDefault());
             BigDecimal totalAmount = rs.getBigDecimal("total_amount");
 
-            booking = (T) new BookingDtoResponse(bookRef, bookDate, totalAmount, null);
+            booking = (TDto) new BookingDtoResponse(bookRef, bookDate, totalAmount, null);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -71,9 +73,9 @@ public class BookingMapper<T extends BookingDtoResponse> implements Loader<T> {
     @NotNull
     private Set<Ticket> getTicketsNosByBookRef(Connection con, String bookRef) {
         Set<Ticket> ticketNos = new HashSet<>();
-        String query2 = TicketQuery.TICKETS_BY_BOOK_REF.getQuery();
-        String query = TicketQuery.TICKETS_NOS_BY_BOOK_REF.getQuery();
-        try (var stmt = con.prepareStatement(query2)) {
+        String query = ticketQuery.getTICKETS_BY_BOOK_REF();
+//        String query = ticketQuery.getTICKETS_NOS_BY_BOOK_REF();
+        try (var stmt = con.prepareStatement(query)) {
             stmt.setString(1, bookRef);
 
             try (var rs = stmt.executeQuery()) {

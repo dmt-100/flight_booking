@@ -1,0 +1,958 @@
+{
+	"info": {
+		"_postman_id": "4ada7ad3-9f8c-4556-b418-e48e97335ce1",
+		"name": "Flight Booking API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27224235"
+	},
+	"item": [
+		{
+			"name": "BoardingPass",
+			"item": [
+				{
+					"name": "save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ticketNo\": \"0005433634246\",\r\n    \"flightId\": 18437,\r\n    \"boardingNo\": 16,\r\n    \"seatNo\": \"7A\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass/0005433615938",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass",
+								"0005433615938"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass/limit/100000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass",
+								"limit",
+								"100000"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ticketNo\": \"0005433578080\",\r\n    \"flightId\": 49989,\r\n    \"boardingNo\": 2,\r\n    \"seatNo\": \"1A\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass?userId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass/0005433634552/49989",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass",
+								"0005433634552",
+								"49989"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": 1,\r\n  \"compositeKeys\": [\r\n    \"0005433615996\",49989,\r\n    \"0005433615833\",49989,\r\n    \"0005433634448\",49989\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/boarding-pass/boarding-passes-delete",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"boarding-pass",
+								"boarding-passes-delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "stats",
+					"item": [
+						{
+							"name": "getBookingStatsDaily",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/booking/statistics/daily",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"booking",
+										"statistics",
+										"daily"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getBookingStatsWeekly",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/booking/statistics/weekly",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"booking",
+										"statistics",
+										"weekly"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getTotalAmountSpentByPassenger",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": ""
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getRevenueByBookingByAirport",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/booking/stats/revenueByBookingByAirport",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"booking",
+										"stats",
+										"revenueByBookingByAirport"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getSummaryClassification",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": ""
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "service",
+					"item": [
+						{
+							"name": "findBookingsByFlightId",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/booking/flight/441",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"booking",
+										"flight",
+										"441"
+									],
+									"query": [
+										{
+											"key": "isTickets",
+											"value": "true",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "saveBooking",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"bookRef\": \"ABC126\",\r\n    \"bookDate\": \"2017-07-12T03:57:00Z\",\r\n    \"totalAmount\": 222222.00\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/booking?userId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/booking?bookRef=00015D",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking"
+							],
+							"query": [
+								{
+									"key": "bookRef",
+									"value": "00015D"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAllByDate",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/booking?limit=50",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateBooking",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"bookRef\": \"773F43\",\r\n    \"bookDate\": \"2017-07-12T03:57:00Z\",  // Пример даты в формате ISO 8601\r\n    \"totalAmount\": 130000.00\r\n    // Добавьте другие поля, которые необходимо обновить, если есть\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/booking/773F43",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking",
+								"773F43"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteBooking",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/booking/ABC127",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking",
+								"ABC127"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteList",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/deleteList",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"deleteList"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flights",
+			"item": [
+				{
+					"name": "stats",
+					"item": [
+						{
+							"name": "getFlightCountByStatus",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/flightCountByStatus",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"flightCountByStatus"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getFlightCountByMonth",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/flightCountByMonth",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"flightCountByMonth"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getDelayedFlightsWithPassengers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/delayedFlightsWithPassengers",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"delayedFlightsWithPassengers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getFlightsDelayedMoreThanTwoHours",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/flightsDelayedMoreThanTwoHours",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"flightsDelayedMoreThanTwoHours"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getMostPopularRoutes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/mostPopularRoutes",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"mostPopularRoutes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getAvgDelayByDayOfWeek",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/flight/stats/avgDelayByDayOfWeek",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"flight",
+										"stats",
+										"avgDelayByDayOfWeek"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/flight/69",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"flight",
+								"69"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"flightNo\": \"AB123\",\r\n  \"scheduledDeparture\": \"2024-08-08T10:00:00Z\",\r\n  \"scheduledArrival\": \"2024-08-08T14:00:00Z\",\r\n  \"departureAirport\": \"DME\",\r\n  \"arrivalAirport\": \"LED\",\r\n  \"status\": \"Scheduled\",\r\n  \"aircraftCode\": \"773\",\r\n  \"actualDeparture\": \"2024-08-08T10:15:00Z\",\r\n  \"actualArrival\": \"2024-08-08T14:15:00Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/flight?limit=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"flight"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tickets",
+			"item": [
+				{
+					"name": "stats",
+					"item": [
+						{
+							"name": "getCountTicketsOnScheduledFlightsByTimeRange",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "saveTicket",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ticketNo\": 1000111000132,\r\n    \"bookRef\": \"ABC132\",\r\n    \"passengerId\": 456,\r\n    \"passengerName\": \"John Doe\",\r\n    \"contactData\": {\r\n        \"email\": \"belovanina11047777@postgrespro.ru\",\r\n        \"phone\": \"+70048667777\"\r\n    },\r\n    \"booking\": {\r\n        // данные для объекта Booking\r\n    },\r\n    \"ticketFlights\": [\r\n        // массив объектов TicketFlight\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/ticket?userId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "saveTicket",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"ticketNo\": 123,\r\n  \"bookRef\": \"ABC123\",\r\n  \"passengerId\": 456,\r\n  \"passengerName\": \"John Doe\",\r\n  \"contactData\": {\r\n    \"email\": \"john.doe@example.com\",\r\n    \"phone\": \"+1 (123) 456-7890\"\r\n  },\r\n  \"booking\": {\r\n    \"bookRef\": \"ABC123\",\r\n    \"bookDate\": \"2023-06-01T12:00:00Z\",\r\n    \"totalAmount\": 500.00\r\n  },\r\n  \"ticketFlights\": [\r\n    {\r\n      \"flightId\": 1,\r\n      \"fareConditions\": \"Economy\",\r\n      \"amount\": 500.00\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/ticket?userId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ticket/0005433615996",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket",
+								"0005433615996"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAll",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ticket",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"ticketNo\": 124,\r\n  \"bookRef\": \"ABC138\",\r\n  \"passengerId\": 4444444444,\r\n  \"passengerName\": \"John Doe\",\r\n  \"contactData\": {\r\n    \"email\": \"john.doe@example.com\",\r\n    \"phone\": \"+1 (123) 456-7890\"\r\n  },\r\n  \"booking\": {\r\n    \"bookRef\": \"ABC138\",\r\n    \"bookDate\": \"2023-06-01T12:00:00Z\",\r\n    \"totalAmount\": 500.00\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/ticket?userId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ticket/0005433615938",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ticket",
+								"0005433615938"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteListOfTickets",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPassengerInfo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/booking/bookingRef/00138A",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking",
+								"bookingRef",
+								"00138A"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPassengerInfoByFlight",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/booking/flightId/65598",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"booking",
+								"flightId",
+								"65598"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "booking",
+			"value": "http://localhost:8080/booking/",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "ticket",
+			"value": "http://localhost:8080/ticket/",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "flight",
+			"value": "http://localhost:8080/flight/",
+			"type": "string",
+			"disabled": true
+		}
+	]
+}

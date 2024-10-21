@@ -1,11 +1,23 @@
 package ru.dmt100.flight_booking.entity.booking.model.dto;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import ru.dmt100.flight_booking.util.KeyProvider;
 
-public record BookingDto(
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+public record BookingDto (
         String bookRef,
-        ZonedDateTime bookDate,
-        BigDecimal totalAmount) {
+        OffsetDateTime bookDate,
+        BigDecimal totalAmount) implements KeyProvider<String> {
+
+    public String getId() {
+        return bookRef;
+    }
+
+
+    @Override
+    public String getKey() {
+        return bookRef;
+    }
 
 }

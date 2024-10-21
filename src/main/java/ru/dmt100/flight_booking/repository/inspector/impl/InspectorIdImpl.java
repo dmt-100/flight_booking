@@ -1,5 +1,6 @@
 package ru.dmt100.flight_booking.repository.inspector.impl;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.dmt100.flight_booking.entity.booking.repository.sql.BookingQuery;
 import ru.dmt100.flight_booking.enums.TableType;
@@ -11,6 +12,12 @@ import java.sql.SQLException;
 
 @Component
 public class InspectorIdImpl<T> implements InspectorId<T> {
+
+    private final BookingQuery bookingQuery;
+
+    public InspectorIdImpl(@Qualifier("bookingQuery") BookingQuery bookingQuery) {
+        this.bookingQuery = bookingQuery;
+    }
 
     @Override
     public boolean inspect(Connection сonnection, TableType tableType, T key) {
@@ -35,7 +42,7 @@ public class InspectorIdImpl<T> implements InspectorId<T> {
     }
 
     private boolean inspectStringKey(Connection сonnection, String stringKey) {
-        String query = BookingQuery.CHECKING_BOOK_REF.getQuery();
+        String query = bookingQuery.getCHECKING_BOOK_REF();
         try (var stmt = сonnection.prepareStatement(query)) {
             stmt.setString(1, stringKey);
             var rs = stmt.executeQuery();

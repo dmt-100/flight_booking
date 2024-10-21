@@ -38,6 +38,7 @@ public class Ticket {
     @Column(name = "contact_data", columnDefinition = "jsonb")
     @Convert(converter = MapConverter.class)
     Map<String, String> contactData;
+
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_ref")
